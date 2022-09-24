@@ -184,7 +184,7 @@
       access control (ABAC) and match AWS resources with IAM principals
       dynamically to "simplify permissions management at scale"
   
-  ● IDENTITY FEDERATION [[{0_PM.TODO,security.AAA}]] 
+  ● IDENTITY FEDERATION [[{01_PM.TODO,security.AAA}]] 
     - Allow to map "Active Directory"/... identities to federated-IAM-users.
   @[https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_identity-management.html#%23intro-identity-federation]
   
@@ -212,7 +212,7 @@
           Full list is available at:
         @[https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_aws-services-that-work-with-iam.html]
     See also IAM-roles vs resouce-policies comparative at:
-    @[https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_compare-resource-policies.html] [[{0_PM.TODO}]]
+    @[https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_compare-resource-policies.html] [[{01_PM.TODO}]]
   
   ● attribute-based access control (ABAC):
     Tags: enable to add customizable key-value attributes to (many) supported resource types.
@@ -316,7 +316,7 @@
     - published by: AWS | custom private (Uploaded+imported) | market place
     - NOTE: AWS Official linux AMIs default to user "ec2-user" [[{security.aaa}]]
   
-  - AKI == Amazon Kernel Image (AKI) [[{0_PM.TODO]]
+  - AKI == Amazon Kernel Image (AKI) [[{01_PM.TODO]]
   - ARI == Amazon Ramdisk Image (ARI)[[}]]
 
   - Instance IP and DNS name change on reboot.   [[{1_IAAS.VM.EC2.network,troubleshooting.network]]
@@ -359,7 +359,7 @@
     - @[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/virtualization_types.html]
   [[}]]
 
-● ECS Summary: [[{1_IAAS.VM.ECS,devops.containerization,0_PM.WiP]]
+● ECS Summary: [[{1_IAAS.VM.ECS,devops.containerization,01_PM.WiP]]
   @[https://aws.amazon.com/es/ecs/]
   - ECS: Elastic Container Service
   - Foundational pillar for key AWS  services, integrating with
@@ -562,7 +562,7 @@
   
   [[{]][[}]]
   ● simple serverless Java app illustrating AWS S3 "Select" SQL query on CSVs@S3
-  @[https://github.com/aws-samples/s3-select-phonebook-search]  [[{0_PM.low_code}]]
+  @[https://github.com/aws-samples/s3-select-phonebook-search]  [[{01_PM.low_code}]]
     - No database server required.
     - S3 Select (2018+) and Amazon S3 Glacier Select allow customers to
       run SQL queries directly on data stored in S3 and Amazon S3 Glacier.
@@ -573,7 +573,7 @@
   
   [[}]]
   
-  ● Lake Formation: [[{1_iaas.storage,Arch.data_lake,0_PM.TODO}]]
+  ● Lake Formation: [[{1_iaas.storage,Arch.data_lake,01_PM.TODO}]]
    @[https://www.infoq.com/news/2019/08/aws-lake-formation-ga/]
   - fully managed service that makes it much easier for customers
      to build, secure, and manage data lakes.
@@ -599,7 +599,7 @@
   
 ● Key Mng Srv(KMS): Management of cryptographic secrets for Apps and AWS resources.
 ● Glacier         : "Backup" storage.
-● Elastic File system (EFS): Fully managed NFS for *Linux workloads* (Cloud|on-premises) [[{1_iaas.storage.fs,0_PM.TODO]]
+● Elastic File system (EFS): Fully managed NFS for *Linux workloads* (Cloud|on-premises) [[{1_iaas.storage.fs,01_PM.TODO]]
   - Scales on demand *TO PETABYTES* without disrupting apps with Strong FS consistency across 3 AZ [[{escalability}]]  
   - Automatically shrinks when removing files.
 
@@ -652,7 +652,7 @@
            message-sequence info must be added to message to help consumer order data.
   
    visible ^                     
-   messages│   ┌─────┐           SQS node A  [[{0_doc_has.diagram]]
+   messages│   ┌─────┐           SQS node A  [[{02_doc_has.diagram]]
    in queue│ ──┘  ·  └───···
            └────────────────···→ time
    visible ^   ·  ·  ·           
@@ -720,7 +720,7 @@
 ● DynamoDB        : NoSQL Database
 ● Redshift        : scalable data warehouse service.
 ● ElastiCache     : in-memory caching with microsecond latency.
-● CloudWatch monitoring and observability service: [[{101,troubleshooting,monitoring,0_PM.TODO]]
+● CloudWatch monitoring and observability service: [[{101,troubleshooting,monitoring,01_PM.TODO]]
   @[https://aws.amazon.com/cloudwatch/]
   - built for: DevOps engineers, developers, site reliability engineers (SREs), IT managers.
   - Cloud and on-premises
@@ -744,7 +744,7 @@
        choosing sane defaults..."
 [[}]]
 
-● Elastic Cache: Manager redis/memcache cluster [[{arch.data.cache,arch.real_time,0_PM.TODO]]
+● Elastic Cache: Manager redis/memcache cluster [[{arch.data.cache,arch.real_time,01_PM.TODO]]
  @[https://aws.amazon.com/elasticache/]
   • Managed service for popular OOSS compatible in-memory data stores.
   • boost performance of databases by retrieving data from high throughput/low-latency 
@@ -761,7 +761,7 @@
                     WARN: Not free!
 
 ● SNS: Simple Notification Service [[{QA.UX.notification,arch.event_stream,arch.async/reactive]]
-  │Publisher│               │ SNS │              │Subscriber│ [[{0_doc_has.diagram]]
+  │Publisher│               │ SNS │              │Subscriber│ [[{02_doc_has.diagram]]
   │Producer │ → (push to) → │topic│ → (push to) →│Consumer  │
                  ^^^^^^^                          ^^^^^^^^^^
    push can be made through SQS,                 (Android, Apple,
@@ -952,7 +952,7 @@
   - Varun Jewalikar, Software Engineer at Prime Video (See AWS Chaos Engineering)
   - Adrian Hornsby: Principal Developer Advocate (Architecture) at AWS
   
-  - DevOps Essential @[https://github.com/PoeBlu/aws-devops-essential] [[{101,devops,0_PM.TODO}]]
+  - DevOps Essential @[https://github.com/PoeBlu/aws-devops-essential] [[{101,devops,01_PM.TODO}]]
 
 
 
@@ -989,7 +989,7 @@
   - AWS CLI v2 @[https://www.infoq.com/news/2020/02/AWS-CLI-V2/ ]
     Includes SSO and Interactive Usability Features.
 
-● AWS Security  : [[{ security.101,0_PM.TODO ]]
+● AWS Security  : [[{ security.101,01_PM.TODO ]]
   -  User, Group, and Role management with IAM and Policies.
   -  Audit trails with CloudTrail.
   -  Threat detection and intelligence with GuardDuty.
@@ -1127,7 +1127,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
 - CUSTOM KEY STORE  : (create|update|delete|connect|disconnect|describe)-custom-key-store
 [[}]]
 
-● Secret Manager @[https://aws.amazon.com/secrets-manager/] [[{security.101,0_PM.TODO,security.secret_mng]]
+● Secret Manager @[https://aws.amazon.com/secrets-manager/] [[{security.101,01_PM.TODO,security.secret_mng]]
   - protect secrets enabling to create/update/rotate retrieve credentials, API keys,...
   - Enables fine-grained permissions and audit secret rotation 
   - Pay as you go
@@ -1136,7 +1136,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
 
 [[}]]
 
-● CloudTrail: @[https://aws.amazon.com/cloudtrail/] [[{audit,security.auditing,0_PM.TODO]]
+● CloudTrail: @[https://aws.amazon.com/cloudtrail/] [[{audit,security.auditing,01_PM.TODO]]
   - service enabling governance, compliance, operational auditing, and risk
     auditing of your AWS account.
   - log, continuously monitor, and retain account activity related to actions
@@ -1145,7 +1145,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
     the AWS Management Console, AWS SDKs, command line tools, and other AWS services.
   - This event history simplifies security analysis, resource change tracking, and troubleshooting.
 [[}]]
-● GuardDuty @[https://aws.amazon.com/guardduty/] threat detection service [[{security.monitoring,0_PM.low_code]] 
+● GuardDuty @[https://aws.amazon.com/guardduty/] threat detection service [[{security.monitoring,01_PM.low_code]] 
   - continuously monitoring for malicious activity/unauthorized behavior.
   - continuously analyze event log data for potential threats using
     machine learning, anomaly detection, and integrated threat intelligence.
@@ -1159,7 +1159,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
      detections and one policy violation detection."
 [[}]]
 
-● PolicyUniverse [[{governance.policy,0_PM.qa,troubleshooting,0_PM.TODO ]]
+● PolicyUniverse [[{governance.policy,01_PM.qa,troubleshooting,01_PM.TODO ]]
   @[https://github.com/Netflix-Skunkworks/policyuniverse]
   - Package providing classes to parse AWS IAM and Resource Policies.
   - Additionally, it can expand wildcards in Policies using permissions
@@ -1190,7 +1190,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
       into and out of the AWS cloud          the back up of data across AWS services
                                              in cloud/Storage-gateway
 
-● Vagrant [[{devops.IaC,0_PM.TODO]]
+● Vagrant [[{devops.IaC,01_PM.TODO]]
   @[https://vocon-it.com/2016/04/01/aws-automation-using-vagrant-a-hello-world-example/]
 
   - potentially allows for more sophisticated provisioning tasks when compared
@@ -1264,19 +1264,19 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
   
 [[}]]
 
-● EC2 / ECS-Task / DynamoDB / Aurora Rep autoscaling: [[{escalability.101,0_PM.TODO}]]
+● EC2 / ECS-Task / DynamoDB / Aurora Rep autoscaling: [[{escalability.101,01_PM.TODO}]]
   @[https://aws.amazon.com/autoscaling/]
   • AWS Auto Scaling monitors applications to automatically adjusts
     capacity to desired predictable performance at lowest possible cost. [[{1_price}]]
 [[]]
 
-● EC2, ssh over SSM [[{security.101,0_PM.TODO}]]
+● EC2, ssh over SSM [[{security.101,01_PM.TODO}]]
   - AWS session manager allow to replace ssh
   - SSH over AWS SSM allows SSH user management through IAM.
     No requirement to store SSH keys locally or on server.
    @[https://github.com/PoeBlu/ssh-over-ssm]
 
-● Firecracker Ligthweight Virtualization: [[{1_iaas.vm,0_PM.TODO,1_price,arch.serverless,}]]
+● Firecracker Ligthweight Virtualization: [[{1_iaas.vm,01_PM.TODO,1_price,arch.serverless,}]]
 @[http://www.eweek.com/security/aws-boosts-serverless-security-with-firecracker-microvms]
   - Virtualization technology based on KVM that can launch microVMs in non-virtualized
     environments in less than 125 ms and thousands of new instances per seconds.
@@ -1304,7 +1304,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
     database to death’ problem"...' 
 
 
-● CodeStar App.Development [[{devops.git,devops.low_code,0_PM.low_code,0_PM.TODO]]
+● CodeStar App.Development [[{devops.git,devops.low_code,01_PM.low_code,01_PM.TODO]]
  [https://aws.amazon.com/codestar/]
   - Centralize development activities:
     backlog -> "tickets" -> Project ->  commits    -> builds, -> deployments [[{qa}]]
@@ -1371,7 +1371,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
 ● AWS-PlantUML sprites, macros, stereotypes, ... for AWS components. 
  @[https://github.com/milo-minderbinder/AWS-PlantUML]
 
-● AWS (REST+WebSocket) API Gateway: [[{arch.api_mng,0_PM.TODO]]
+● AWS (REST+WebSocket) API Gateway: [[{arch.api_mng,01_PM.TODO]]
 @[https://aws.amazon.com/api-gateway/]
   - Create, maintain, and secure APIs at any scale.
     (create/publish/version/monitor/secure APIs).
@@ -1388,7 +1388,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
     additional session information?
 [[}]]
 
-● Chaos Engineering [[{qa.101,0_PM.TODO]]
+● Chaos Engineering [[{qa.101,01_PM.TODO]]
 @[https://www.infoq.com/news/2020/08/aws-chaos-engineering/]
   • Varun Jewalikar, Software Engineer at Prime Video, and Adrian
     Hornsby, Principal Developer Advocate (Architecture) at AWS, write
@@ -1410,7 +1410,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
 [[}]]
 
 
-● Is AWS Free Tier Really Free? [[{"1_price.free.101,0_PM.TODO]]
+● Is AWS Free Tier Really Free? [[{"1_price.free.101,01_PM.TODO]]
 @[https://www.infoq.com/news/2020/09/aws-free-tier/]
   ""... The AWS Free Tier is free in the same way that a table saw is
   childproof. If you blindly rush in to use an AWS service with the
@@ -1451,7 +1451,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
     overage, they will almost universally waive the fee. 
 [[}]]
 
-● honeycode.aws: Build form-like apps in "minutes"!!! [[{0_PM.low_code,0_PM.TODO}]]
+● honeycode.aws: Build form-like apps in "minutes"!!! [[{01_PM.low_code,01_PM.TODO}]]
 @[https://www.honeycode.aws/]
 
 ● AWS Cloud Shell CLI v2 in browser[[{101.cli}]]
@@ -1471,7 +1471,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
   See also: unofficial AWS CloudShell plugin for VS Code:
             https://github.com/iann0036/vscode-aws-cloudshell
 
-● Open Policy Agent (OPA): [[{security.101.aaa,k8s,standards.security,0_PM.QA,0_PM.TODO"]]
+● Open Policy Agent (OPA): [[{security.101.aaa,k8s,standards.security,01_PM.QA,01_PM.TODO"]]
   • OOSS, GENERAL-PURPOSE policy engine that unifies policy enforcement 
     across the stack using a high-level declarative language. 
   • It lets you specify policy as code and simple APIs to offload
@@ -1501,7 +1501,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
 [[}]]
 
 
-● AWS Amazon MQ (2017+) [[{arch.message_queue,0_PM.TODO}]] 
+● AWS Amazon MQ (2017+) [[{arch.message_queue,01_PM.TODO}]] 
   - managed message broker Apache ActiveMQ, compatibl with most
     "industry-standard" protocols like JMS, NMS, AMQP 1.0 and 0-9-1, STOMP,
     MQTT, and WebSocket.
@@ -1512,7 +1512,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
   @[https://www.infoq.com/news/2020/11/aws-amazon-mq-rabbitmq/]
 [[}]]
 
-● AWS Lambda is Not a Magic Reliability Wand   [[{arch.serverless.101,0_doc_has.comparative}]]
+● AWS Lambda is Not a Magic Reliability Wand   [[{arch.serverless.101,02_doc_has.comparative}]]
  by Karl Pickett | Jul, 2020 | Medium
 @[https://medium.com/@karl.pickett/aws-lambda-is-not-a-magic-reliability-wand-91da728acba]
 
@@ -1585,7 +1585,7 @@ https://www.infoq.com/news/2021/06/amazon-ecs-anywhere-ga/
 #################
 Low_code, AWS Amplify: App Dev. accelerator.
 
-[[{governance,security,0_PM.radar]]
+[[{governance,security,01_PM.radar]]
 <span xsmall>Cloud Custodian</span>
 @[https://cloudcustodian.io/]
 @[https://manheim-c7n-tools.readthedocs.io/en/latest/]
@@ -1673,14 +1673,14 @@ Low_code, AWS Amplify: App Dev. accelerator.
                if build fails, post_build is still executed.
 
 
-  • ECS vs EKS [[{0_PM.TODO}]]
+  • ECS vs EKS [[{01_PM.TODO}]]
   @[https://www.missioncloud.com/blog/amazon-ecs-vs-eks-which-service-is-right-for-you]
 
 
  • Vagrant+Docker:
   @[https://vocon-it.com/2016/04/06/aws-automation-using-vagrant-part-3-creating-a-docker-host-on-aws-in-10-minutes-using-vagrant/]
 
- • Graviton EC2 instances: [[{1_price,0_PM.radar}]]
+ • Graviton EC2 instances: [[{1_price,01_PM.radar}]]
    @[https://www.infoq.com/news/2021/12/amazon-ec2-graviton3-arm/]
    @[https://www.infoq.com/news/2020/09/aws-ec2-t4g-instances/]
    @[https://www.datacenterknowledge.com/amazon/aws-launches-cloud-instances-powered-custom-arm-chips]
@@ -1739,7 +1739,7 @@ Low_code, AWS Amplify: App Dev. accelerator.
       execute commands remotely, ensure servers remain in specific state,
       and enforce configuration management requirements.
 
-  • EventBridge Schema Registry: [[{arch.event_stream,0_PM.TODO}]]
+  • EventBridge Schema Registry: [[{arch.event_stream,01_PM.TODO}]]
     - developers can store the event structure-or schema-in a shared 
       central location and map those schemas to code for Java/Python/Typescript,
       using events as objects in their code.
@@ -1753,7 +1753,7 @@ Low_code, AWS Amplify: App Dev. accelerator.
     - content added from: - file systems, SharePoint, intranet sites,
       file sharing services, ... into centralized location.
 
-  • What typical 100% Serverless Architecture looks like in AWS! [[{arch.serverless.101,0_doc_has.diagram,0_PM.TODO}]]
+  • What typical 100% Serverless Architecture looks like in AWS! [[{arch.serverless.101,02_doc_has.diagram,01_PM.TODO}]]
   @[https://medium.com/serverless-transformation/what-a-typical-100-serverless-architecture-looks-like-in-aws-40f252cd0ecb]
 
   • donnemartin/saws: supercharged AWS command line interface (CLI).  [[{qa.UX}]]
