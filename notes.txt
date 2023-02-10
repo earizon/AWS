@@ -9,6 +9,7 @@
   in the Pantheon of the Unicode Gods.
 ────────────────────────────────────────────────────────────────────────────────
 
+
 [[{101]]
 ● AWS Nomenclature:
   - HIGH_AVAILABILITY: Service is respondent maybe in degraded mode                          [[{qa.ha]]
@@ -20,7 +21,78 @@
   - AWS REGION       : (Multi) Data center in some World geographical place with 2 or more
                        availabilities zones.                                                 [[}]]
 
-● AWS Troubleshooting Basics: Check aws.region!!!!
+● AWS TROUBLESHOOTING BASICS:
+  STEP 1) Check we are using the correct AWS REGION!!!!
+          Sometimes the Web Console switch to the global region (IAM, ...) and then
+          if fails to go back to our working region displaying no resources.
+
+  STEP 2) debug/troubleshoot "access denied" or "unauthorized operation" error:
+          REF: https://aws.amazon.com/premiumsupport/knowledge-center/troubleshoot-iam-policy-issues/
+
+    if encoded-msg-from-error is present:
+    (just some operations return an encoded authorization message,
+     documentation for an individual operation indicates whether that
+     operation returns an encoded message in addition to an HTTP code).
+
+    $ aws sts decode-authorization-message \       <··· provides further details
+        --encoded-message $encoded-msg-from-error       request denied by explicit deny|non-explicit-allow.
+                                                        principal-of-request.
+                                                        requested-action.
+                                                        requested-resource.
+                                                        values of condition-keys
+
+  1) Identify the API caller
+     $ aws sts get-caller-identity
+     $ aws ??? --debug             <- search for "Found credentials in shared credentials file"
+  2) Check the IAM policy permissions
+  3) Evaluate service control policies (SCPs)
+     Context: AWS account is part of AWS Organization
+     SCPs can be applied at the hierarchical level to allow or deny actions.
+  4) Review identity-based and resource-based policies
+     - Make sure that there is an explicit allow statement in the IAM
+       entities identity-based policy for the API caller.
+     - Make sure that the API supports resource-level permissions.
+       Otherwise use "*" in Policy Statement.Resource. e.g:
+       {
+           "Version": "2012-10-17",
+           "Statement": [
+               {
+                   "Sid": "SorryThisIsNotGoingToWorkAsExpected",
+                   "Effect": "Allow",
+                   "Action": ["ec2:*"],
+                   "Resource": "arn:aws:ec2:us-east-1:accountid:instance/*"
+               }               └─────────────────────┬───────────────────┘
+           ]                 ERROR: not all EC2 API actions support
+       }                              resource-level permissions
+                               FIX: replace by "*"
+
+
+  5) Check for permission boundaries policies.
+     Denied permissions in boundary policies will ignore any allowed-permission anywhere else
+  6) Evaluate session policies
+     If the API caller is an IAM-role or federated-user,
+     session policies apply.
+      The permissions for a session are the intersection of
+     identity-based policies for the IAM-entity-used to create
+     the session and the session policies.
+
+  7) Make sure that the condition keys in the policy are supported by the APIs
+     AWS-condition-keys can be used to compare elements in an API
+     request made to AWS with key values specified in a IAM policy.
+
+  8) Review the IAM policy errors and troubleshooting examples
+
+     See the following examples to identify the error message, the API caller,
+     the API, and the resources being called:
+
+  STEP 2) Check Data-center status for our regions:
+        @[https://status.aws.amazon.com/govcloud]
+
+
+  STEP 3) Check billing: TODO
+
+  STEP 4) Check DISK USSAGE for EC2/ECS/K8s/... instances:
+          It could be possible that some process is writting "too many logs".
 
 ● IAM / Governance Hierarchy Summary: [[{security.101]]
 @[https://aws.amazon.com/iam/]
@@ -58,7 +130,13 @@
     ├────────────────┼──────────────────┤| (alt 2) ${HOME}/.aws/credentials ($ aws configure)
     │  Access keys   │ · API calls      ←┘  | [default]
     │   ^            │ · AWS cli        │   | aws_access_key_id = ...
-    └────────────────┴──────────────────┘   | aws_secret_access_key = ...
+    │                │                  │   | aws_access_key_id = ...
+    ├────────────────┼──────────────────┤
+    │ "Injected" EC2 │ · EC2 services   <·· EC2 instances contains metadata that AWS CLI and SDK
+    │ credentials    │                  │   can directly query for temporary credentials.
+    └────────────────┴──────────────────┘   PRESETUP: attach IAM-role to the instance
+                                            https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-metadata.html
+
 
     ● KEY POINT: A Principal can be can := AWS root-account │ IAM-user │ IAM-role
                  Permissions (defined by policies) are applied to principals.
@@ -627,6 +705,7 @@
 
 ● Network Core Services:
   •  Route 53     : DNS  (IPv4 and IPv6)
+
   •  ENI          : (logical) elastic network interface "inside" VPC.
   │ @[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html]
   │                  Main attributes:
@@ -643,9 +722,9 @@
   │        with complete control over your virtual networking environment.
   │        ( IP address range, subnets, route tables and network gateways).
   •─ ELB : Elastic Load Balancing.
-  │ distributes incoming traffic across multiple targets(EC2 instances,
-  │ containers, IP addresses, Lambda functions,...) in 1+ Availability Zones.
-  │ - 3 types of load-balancers:
+  │  distributes incoming traffic across multiple targets(EC2 instances,
+  │  containers, IP addresses, Lambda functions,...) in 1+ Availability Zones.
+  │  - 3 types of load-balancers
   •─ Direct Connect: service solution to setup dedicated network connection
   │                  from premises to AWS.
   •─ Security Groups (SG): "Firewalls" for services (EC2, lambdas, ...)
@@ -939,13 +1018,68 @@
         #!/bin/bash
         ...
 
-    SESSION MANAGER:
+    SESSION MANAGER: (better alternative to ssh) [[{security.101,01_PM.TODO]]
+    - allows to manage SSH users through IAM.
     - fully managed and auditable Manager to manage EC2/on-premises/VMs
       access, through an interactive one-click browser-based shell or through
       AWS cli.
     -  No need to open inbound ports, maintain bastion hosts, or manage SSH
        keys. PREFERRED TO SSH!!!.
-    - Requires to have ssm installed on EC2
+    - No requirement to store SSH keys locally or on server.
+    - Requires to have ssm installed on EC2 [[}]]
+   ┌─ @[https://github.com/PoeBlu/ssh-over-ssm]
+   │ ssh-ssm.sh is an small wrapper around SSM and ssh to create temp keys on demand and
+   │  init ssm sessions.
+   │
+   │* PRESETUP)
+   │    - download/install session-manager-plugin for aws cli.
+   │    - $ aws ssm start-session  # init SSM session
+   │    - ~/.aws/{config,credentials} properly configured
+   │    - connect SSH over SSM.
+   │    - Users IAM permissions to reach their regional ssm.{region}.amazonaws.com endpoint (via HTTPS).
+   │    - IAM ec2-instance-profile allowing SSM access.
+   │    - SSM agent installed on EC2 instance (may require agent updates).
+   │    - AWS cli requires you install  locally
+   │
+   │  - SSM advantages:
+   │    - connect private instances in VPC without "jumping" through a public-facing bastion.
+   │    - No need to store any SSH keys locally or in server.
+   │    - fine-grained permissions for SSM 'Documents' (AWS-PasswordReset, AWS-StartPortForwardingSession,..)
+   │
+   │  - ~/.ssh/config:
+   │    Host production
+   │      Hostname i-0xxxxxxxxxxxxxe28
+   │      User ec2-user
+   │  +   ProxyCommand bash -c "AWS_PROFILE=projectX.prod ~/bin/ssh-ssm.sh %h %r"     <··· Get sure previsouly that SSM agent
+   │                                                                                       is working for the instance
+   │    Host test
+   │      Hostname i-0xxxxxxxxxxxxxe49
+   │      User ec2-user
+   │  +   ProxyCommand bash -c "AWS_PROFILE=projectX.test ~/bin/ssh-ssm.sh %h %r"
+   │
+   │    Match Host i-*
+   │      ...
+   │  - If a key is available via ssh-agent ssh-ssm.sh will use it, otherwise a (15sec) temp.key is used.
+   │
+   │  $ export AWS_PROFILE=int-monitor1
+   │  $ python3 ssm_instances.py update  # <··· Update data about ssm instances.
+   │  $ python3 ssm_instances.py         # <··· List&update SSM instances (checkagent on each instance)
+   │  instance id           |ip             |agent up-to-date ...
+   │  ------------------------------------------------------- ...-
+   │  i-0xxxxxxxxxxxxx3b4   |10.xx.xx.6     |True             ...
+   │  i-0xxxxxxxxxxxxx76e   |10.xx.xx.142   |True             ...
+   │  i-0xxxxxxxxxxxxx1b6   |10.xx.xx.75    |True             ...
+   │  ...
+   │  $ aws-mfa
+   │  INFO - Validating credentials for profile: default
+   │  INFO - Your credentials are still valid for 14105.807801 seconds they will expire at 2020-01-25 18:06:08
+   │
+   │  $ ssh test
+   │  Last login: Sat Jan 25 08:59:40 2020 from localhost
+   │  ...
+   │  $ scp ~/bin/ssh-ssm.sh prod
+   │  $ ssh ...
+   └───────────────────────────────────────────────────────────────
 [[}]]
 
 
@@ -984,23 +1118,200 @@
   │ DAS, SAN, NAS  RDBMS           │   EBS   EFS    S3   RDS                │
   └────────────────────────────────┴────────────────────────────────────────┘
 
-
-● AWS CLI  [[{101]]
-  - TODO: Installation:
-  - POST-INSTALLATION: (generates ~/.aws/config )
-    $ aws configure
-    AWS Access Key ID [****************FJMQ]:
-    AWS Secret Access Key [****************DVVn]:
+● AWS CLI SUMMARY [[{101.aws_cli]]
+  • AWS CLI POST-INSTALLATION SETUP: (generates ~/.aws/config )
+    $ aws configure                             <······ Not needed for EC2 instances with IAM-role configured
+                                                        AWS CLI and SDK can can directly query for temporary credentials in
+    AWS Access Key ID [****************FJMQ]:           EC2 metadata service:
+    AWS Secret Access Key [****************DVVn]:       https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-metadata.html
     Default region name [eu-central-1a]: eu-central-1
     Default output format [None]:
     (Dynamic methods also exist to retrieve ~/.aws/config temporal tokens from SAML/OAuth2/... session)
 
-    $ aws ec2 describe-key-pairs --key-name AWS_SSH_Key  <- CHECK INSTALL Example:
+  --filter : Server-side (key/key-value) filtering. Examples:
+             --filters "Name=availability-zone,Values=us-*-2a" \ <·· * allowed in value (and keys?)
+                       "Name=root-device-type,Values=ebs"        <·· 2+ filters can be concatenaed
+                  key─name ──┴──────────────┘        └─┴─ key─value
+
+  --query   : Client-side filtering using JMESPath!!! (much more powerful!)
+              with '--output text', output is paginated first.
+              --query applies to  each paginated output
+              => query including first matching element are "random"
+
+    • JMESpath Summary from https://jmespath.org/tutorial.html
+      NOTE: The jpterm  (pypi install jpterm) allows to "juggle" with JMESPath
+            expression and see results in real time.
+
+        INPUT                  | JMSEPath  | OUTPUT
+
+      ◆ { "a": "foo", ...  }   | a         |·"foo"
+      ◆ {"a": {"b":  "value"}} | a.b       |·"value" (or null if not a or b keys
+      ◆ ["a", "b", "c"]        | [1]       |·"b"
+      ◆ ["a", "b", "c"]        | [-1]      |·"c"
+      ◆ {"a": {                | a         |·1
+          "b": {               | .b
+            "c": [             |  .c[0]
+              {"d": [0,[1,2]]},|   .d[1][0]
+              {"d": [3,4]}
+            ]
+          }
+        }}                              ┌ ==  !=, |<, <=, >, >=
+      ◆ {                      |        ·    WARN: No spaces allowed inside []
+          "key1": [            | key1[?S=='s1']
+            {"S":"s1","N":"a"},|  .N       |  [
+            {"S":"s2","N":"c"},|           |    "a",
+            {"S":"s1","N":"b"} |           |    "b"
+          ]                    |           |  ]
+        }                      |           |
+        Short of "WHERE" in SQL. Widely use in aws client. Ej:
+        $ aws ec2 describe-volumes \
+            --query 'Volumes[*].Attachments[?State==`attached`].VolumeId'
+
+      ◆ [0,1,2,3,4,5,6,7,8,9]  |   [0:5]   |   [0,1,2,3,4]
+                               |    └ [start:stop:step]
+
+      ◆ LIST&SLICE PROJECTIONS:       ┌ slice alt: [1:3]
+      { "key1": [              | key1[*]   | [
+          {"1st":"James" ,...},| ^  .1st   |   "James",
+          {"1st":"Jacob" ,...},| ·    ^    |   "Jacob",
+          {"1st":"Jayden",...},| ·    ·    |   "Jayden"
+          {"missing": "..."   }| LHS RHS   | ]
+        ],                     | Projections are evaluated like:
+        "foo": {"bar": "baz"}  | STEP 1) left  hand side (key1[*]) creates array
+      }                        | STEP 2) right hand side (.1st   ) projects
+                               |         (null elements are ignored)
+                               |Projection can be STOP with a Pipe Expression.
+
+      ◆ OBJECT PROJECTIONS:
+        {                      |           |
+          "ops": {             | ops.*.n   | [ 2 ]
+            "funA": {"n": 2},  │ └───┘ ^   │
+            "funC": {"v": "A"} | LHS   RHS |
+          }                    |           |
+        }                      |           |
+
+      ◆ {                      | ┌───────┬─ 2+ projections can be used
+          "key1": [            | key1[*]   | [
+            {                  |  .key2[*] |  [
+              "key2": [        |   .S      |    "S1",
+                {"S": "S1"},   |           |    "S2"
+                {"S": "S2"}    |           |  ],
+              ]                |           |  [
+            },                 |           |    "S3",
+            {                  |           |    "S1"
+              "key2": [        |           |  ]
+                {"S": "S3"},   |           | ]
+                {"S": "S1"}    |
+              ]                |
+            }                  |
+          ]                    |
+        }                      |
+
+      ◆ FLATTENING: '[]' expression
+        {                      | K1[]      | [                                         ·
+          "K1": [              |  .K2[]    |  "S1",
+            {                  |    .S     |  "S2",
+              "K2": [          |           |  "S3",
+                {"S": "S1"},   |           |  "S1"
+                {"S": "S2"}    |           | ]
+              ]                |           |
+            },                 |           |
+            {                  |           |
+              "K2": [          |           |
+                {"S": "S3"},   |           |
+                {"S": "S1"}    |           |
+              ]                |           |
+            }                  |           |
+          ]                    |           |
+        }                      |           |
+
+      • [           ···        | []        | [0,1,2,3,4,5,[6,7]]
+          [0, 1],              |           |
+          2,                   |           |
+          [3],                 |           |
+          4,                   |           |
+          [5, [6, 7]]          |           |
+        ]                      |           |
+
+      ◆ {                      | K1[*].F   |
+         "K1": [               | | [0]     |   "f1"
+          {"F":"f1", "L":"d"}, |   PIPE
+          {"F":"f1", "L":"e"}, |
+          {"F":"f1", "L":"f"}, |
+          {"missing": "diff"}  |
+         ],                    |
+         "foo": {"bar": "baz"} |
+        }                      |
+
+      ◆ multiselect lists and multiselect hashes: (create JSON elements)
+        {                      | K1[]      | [
+         "K1": [               | .[N, S.N] |   [
+          {                    |           |     "a", "up"
+           "N": "a",           |           |   ],
+           "S": {"N": "up"}    |           |   [
+          },                   |           |     "b", "dn"
+          {                    |           |   ],
+           "N": "b",           |           |   [
+           "S": {"N": "dn"}    |           |     "c", "up"
+          },                   |           |   ]
+          {                    |           | ]
+           "N": "c",           |
+           "S": {"N": "up"}    |
+          }                    |
+         ]                     |
+        }                      |
+
+      ◆ {                      | K1[].{N:N, S:ST.N}
+         "K1": [               |           |
+          {                    |           | [
+           "N": "a",           |           |  {
+           "ST": {"N": "up"}   |           |   "N": "a",
+          },                   |           |   "S": "up"
+          {                    |           |  },
+           "N": "b",           |           |  {
+           "ST": {"N": "dn"}   |           |   "N": "b",
+          },                   |           | "S": "dn"
+          {                    |           |  },
+           "N": "c",           |           |  {
+           "ST": {"N": "up"}   |           |   "N": "c",
+          }                    |           |   "S": "up"
+         ]                     |           |  }
+        }                      |           | ]
+
+      ◆ FUNCTIONS:
+        {  ············> length(K1) ···> 2  (size)
+          "K1": [        └─────┘
+            { ... },     https://jmespath.org/specification.html#builtin-functions
+            { ... }      abs, avg, ceil, ends_with, floor, join, keys, length, map, max,
+            ]            max_by, merge, min, min_by, not_null, reverse, sort, sort_by,
+        }                starts_with, sum, to_array, to_string, to_number, type, values,
+
+                         ┌ '@' == current element being evaluated in array
+                         contains(@, `foo`).
+
+
+
 
   - AWS CLI v2 @[https://www.infoq.com/news/2020/02/AWS-CLI-V2/ ]
     Includes SSO and Interactive Usability Features.
 
-● AWS Security  : [[{ security.101,01_PM.TODO ]]
+
+  • Related: CloudShell: @[https://aws.amazon.com/cloudshell/]
+    - Use Case: """... you're on a machine that isn't your
+      normal work machine and you want quick access to the CLI... """ .
+    - preconfigured with Bash/Zsh/PowerShell/editors/Git/npm+pip
+    - file uploads up to 1GB to $HOME (persisted between sessions).
+      (1 GB of persistent storage per AWS region)
+    - root access provided.
+    - outbound connections allowed, inbound connections rejected.
+    - Up to 10 concurrent shells in each region at no charge :
+
+    - Note: Microsoft and GCP offer Cloud Shell since 2017 (5GB persistence storage) [[{02_doc_has.comparative}]]
+    - Unofficial AWS CloudShell plugin for VS Code:
+      https://github.com/iann0036/vscode-aws-cloudshell
+[[101.aws_cli}]]
+
+● AWS Security  : [[{security.101,01_PM.TODO ]]
   -  User, Group, and Role management with IAM and Policies.
   -  Audit trails with CloudTrail.
   -  Threat detection and intelligence with GuardDuty.
@@ -1175,7 +1486,7 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
   - Package providing classes to parse AWS IAM and Resource Policies.
   - Additionally, it can expand wildcards in Policies using permissions
     obtained from the AWS Policy Generator.  [[}]]
-[[}]]
+[[security.101}]]
 
 ● Storage Matrix @[https://aws.amazon.com/products/storage/] [[{1_iaas.storage]]
   • Elastic Block Store(EBS)          • Simple Storage Service ("S3")
@@ -1280,12 +1591,6 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
   • AWS Auto Scaling monitors applications to automatically adjusts
     capacity to desired predictable performance at lowest possible cost. [[{1_price}]]
 [[]]
-
-● EC2, ssh over SSM [[{security.101,01_PM.TODO}]]
-  - AWS session manager allow to replace ssh
-  - SSH over AWS SSM allows SSH user management through IAM.
-    No requirement to store SSH keys locally or on server.
-   @[https://github.com/PoeBlu/ssh-over-ssm]
 
 ● Firecracker Ligthweight Virtualization: [[{1_iaas.vm,01_PM.TODO,1_price,arch.serverless,}]]
 @[http://www.eweek.com/security/aws-boosts-serverless-security-with-firecracker-microvms]
@@ -1462,369 +1767,4 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
     overage, they will almost universally waive the fee.
 [[}]]
 
-● honeycode.aws: Build form-like apps in "minutes"!!! [[{01_PM.low_code,01_PM.TODO}]]
-@[https://www.honeycode.aws/]
-
-● AWS Cloud Shell CLI v2 in browser[[{101.cli}]]
-@[https://aws.amazon.com/cloudshell/]
-  - Target: admins and dev/DevOps engineers.
-    main value: """... you're on a machine that isn't your normal work machine
-                   and you want quick access to the CLI... """ .
-
-  - preconfigured with Bash/Zsh/PowerShell/editors/Git/npm+pip,
-  - file uploads up to 1GB to $HOME (persisted between sessions).
-    (1 GB of persistent storage per AWS region)
-  - root access provided.
-  - outbound connections allowed, inbound connections rejected.
-  - Up to 10 concurrent shells in each region at no charge :
-
-  Note: Microsoft and GCP offer Cloud Shell since 2017 (5GB persistence storage)
-  See also: unofficial AWS CloudShell plugin for VS Code:
-            https://github.com/iann0036/vscode-aws-cloudshell
-
-● Open Policy Agent (OPA): [[{security.101.aaa,k8s,standards.security,01_PM.QA,01_PM.TODO"]]
-  • OOSS, GENERAL-PURPOSE policy engine that unifies policy enforcement
-    across the stack using a high-level declarative language.
-  • It lets you specify policy as code and simple APIs to offload
-    policy decision-making from your software.
-    OPA can be used to enforce policies in microservices, Kubernetes,
-    CI/CD pipelines, API gateways, ...
-  • OPA DECOUPLES POLICY DECISION-MAKING FROM POLICY ENFORCEMENT.
-  • When your software needs to make policy decisions it queries OPA
-    and supplies structured data (e.g., JSON) as input. OPA accepts
-    arbitrary structured data as input.
-
-    Request → Service  → |query: JSON value|   → OPA  • Policy (Rego lang)
-    (|Event)           ← |Decision (JSON value|←┘     • Data (JSON)
-
-    • E.g.: Kafka Authorization with OPERATOR
-
-     client → OAuth2 A.Ser: Request token
-     client ← OAuth2 A.Ser: JWT token
-     client → kakfa       : Topic generation + JWT token
-     kakfa  → OPA         : Auth request f (operation, principal)
-     OPA    → OAuth2 A.Ser: Check JWT signature
-     OPA    → OPA         : Authorize f(operation, user_claims, policy)
-     OPA    → kafka       : Auth response
-
-  • See also K8s Gatekeeper to provide a k8s-native way to enforce OPA
-    policies: @[../DevOps/kubernetes_map.html#gatekeeper_summary]
-[[}]]
-
-
-● AWS Amazon MQ (2017+) [[{arch.message_queue,01_PM.TODO}]]
-  - managed message broker Apache ActiveMQ, compatibl with most
-    "industry-standard" protocols like JMS, NMS, AMQP 1.0 and 0-9-1, STOMP,
-    MQTT, and WebSocket.
-  - Vertical scaling, throughput-optimized message brokers
-  - 99.9% Service Level Agreement (SLA).
-  -  LDAP Authentication and Authorization.
-  - Support for RabbitMQ (popular OOSS message broker) announced.
-  @[https://www.infoq.com/news/2020/11/aws-amazon-mq-rabbitmq/]
-[[}]]
-
-● AWS Lambda is Not a Magic Reliability Wand   [[{arch.serverless.101,02_doc_has.comparative}]]
- by Karl Pickett | Jul, 2020 | Medium
-@[https://medium.com/@karl.pickett/aws-lambda-is-not-a-magic-reliability-wand-91da728acba]
-
-● 99designs AWS Vault: [[{security.secrets}]]
- @[https://github.com/99designs/aws-vault]
-  - tool to securely store and access AWS credentials in dev. environments.
-    by storing them in OS'secure keystore and then generating temporary credentials
-    from those to expose to shell and apps.
-  -  Complementary to AWS CLI tools, suppoting profiles and configuration in ~/.aws/config.
-
-#################
-AWS : Diagrama resumen Red.!!!
-https://github.com/undergroundwires/AWS-in-bullet-points @ma
-https://github.com/undergroundwires/AWS-in-bullet-points/blob/master/saa/img/iam/iam-entities.png AWS IAM entities !!!
-############
-AWS CodeGuru
-Amazon CodeGuru Reviewer—launched in general availability in June
-2020— uses ML and automated reasoning to automatically identify
-critical issues, security vulnerabilities, and hard-to-find bugs
-during application development
-
-As a service, it is faster than any manual code review process,
-and can scan 1M lines of code in 30 mins.
-it provides recommendations on how to fix the issues it finds.
-
-########################
-Cloud, AWS: S3 strong consistency  [SLA]
-https://www.allthingsdistributed.com/2021/04/s3-strong-consistency.html
-
-https://netflixtechblog.com/s3mper-consistency-in-the-cloud-b6a1076aa4f8
-############################33
-Why AWS Lambda Pricing Has to Change for the Enterprise
-https://www.infoq.com/articles/aws-lambda-price-change/
-#####################
-AWS Introduces EC2 Serial Console: Troubleshoot Boot and Networking Issues
-https://www.infoq.com/news/2021/04/aws-ec2-serial-console/
-###########################
-AWS Launches Amazon DevOps Guru
-https://www.infoq.com/news/2021/01/aws-devops-guru
-###########################
-AWS,payments:
-Starting from 17 December 2020, we are streamlining the invoicing
-experience for accounts invoiced by Amazon Web Services EMEA SARL
-("AWS Europe"). Your tax invoices will contain the information you
-currently see in the Request for Payment (RFP), such as additional
-purchase details for your Reserve Instance (RI) and Savings Plan (SP)
-purchases, a summary by services, a summary by linked account, as
-well as additional details on any discounts or credits. You will no
-longer receive RFPs.
-##########################
-2021,06, AWS Annuance general availability of Proton:
-https://www.infoq.com/news/2021/06/aws-proton-container-ga/
-
-AWS Proton brings together customers' infrastructure as code, CI/CD
-pipeline, and observability into a single interface, so developers
-can quickly go from code in a repo to a production application.
-Developers rely on AWS Proton's self-service capabilities to deploy
-code quickly and securely without having to become experts on each of
-the underlying services involved, while the central infrastructure
-team can be assured that the apps deployed by their developers using
-AWS Proton meet the standards they have set for their business.
-
-https://www.infoq.com/news/2022/01/proton-terraform-git/
-
-################################
-Cloud: AWS Announces the General Availability of Amazon ECS Anywhere
-https://www.infoq.com/news/2021/06/amazon-ecs-anywhere-ga/
-
-
-#################
-Low_code, AWS Amplify: App Dev. accelerator.
-
-[[{governance,security,01_PM.radar]]
-<span xsmall>Cloud Custodian</span>
-@[https://cloudcustodian.io/]
-@[https://manheim-c7n-tools.readthedocs.io/en/latest/]
-- Opensource Cloud Security, Governance, and Management
-  The Path to a Well Managed Cloud
-
-- Cloud Custodian enables users to be well managed in the cloud. The simple YAML
-  DSL allows you to easily define rules to enable a well-managed cloud
-  infrastructure, that's both secure and cost optimized. It consolidates many of
-  the ad-hoc scripts organizations have into a lightweight and flexible tool,
-  with unified metrics and reporting.
-[[}]]
-
-● TODO / Non-Classified
-  • Automate Sec.Rule Update:
-  - STEP 1: Verify that AWS user has the needed rights/permissions for AmazonEC2FullAccess policy
-
-  - STEP 2: Test that you can see the security policies
-            Example output
-            $ aws ec2 describe-security-groups
-            → {
-            →   "SecurityGroups": [
-            →     {
-            →       "IpPermissionsEgress": [
-            →         ...(egress rules)...
-            →       ],
-            →       "Description": "default VPC security group",
-            →       "IpPermissions": [
-            →         ...(ingress rules)...
-            →       ],
-            →
-            →       "GroupName": "default",
-            →       "VpcId": "vpc-a6e13ecf",
-            →       "OwnerId": "923026411698",
-            →       "GroupId": "sg-0433846d"
-            →     },
-            → ...(other security groups)...
-            → }
-
-  - STEP 3:
-    Test adding/removing new ingress rules:
-    $ EXTERNAL_IP01=$(wget http://ipinfo.io/ip -qO -)
-    $ CidrIp01="${EXTERNAL_IP01}/32"
-    $ IP_PERMISSIONS=$(cat << EOF
-        "IpProtocol": "tcp",
-        "FromPort"  : 22," "ToPort"    : 22,
-        "IpRanges"  : [{"CidrIp": "${CidrIp01}"}]
-        }
-      EOF
-    $ SG_ID="sg-0123456d"
-
-    $ aws ec2 authorize-security-group-ingress --group-id ${SG_ID} \
-          --dry-run \                            ← Check changes. Do not update
-          --ip-permissions '${IP_PERMISSIONS}'
-      ^^^^^^^
-      remove like:
-    $ aws ec2    revoke-security-group-ingress --group-id ${SG_ID} \
-          --ip-permissions '${IP_PERMISSIONS}'
-
-
-  • AWS CI flow "==" CodePipeline + CodeBuild.
-    Ex. Dev Pipeline:                                Flux CD scans every 2
-                                                     minutes the Registry
-                                                     for new images
-                                                          ┌─────────┐
-                                     AWS CodeBuild        v         │
-    │Dev│ → git   → │Git        │ →  (run Buildspec) →  │AWS│     │AWS│
-             push   │- ...      │    - test *1          │ECR│     │EKS│
-                    │- Buildspec│    - package            │        ^
-                                     - build OCI image    └────────┘
-                                                       On new image detected
-                                                       trigger new deployment
-
-                                                             └────┬────┘
-                                                           Integration with
-                                                         ECR will be similar
-     *1:  Run unit tests, Sonarqube(QA), ...
-          Deploying sources to the S3 Repository of artifacts.
-
-    Buildspec:
-      - build (stages) specification YAML file
-      - collection of build commands and related settings
-      - it can be placed in source code or s3.
-      - note:  if 'install' or 'pre_build' fails, build stops.
-               if build fails, post_build is still executed.
-
-
-  • ECS vs EKS [[{01_PM.TODO}]]
-  @[https://www.missioncloud.com/blog/amazon-ecs-vs-eks-which-service-is-right-for-you]
-
-
- • Vagrant+Docker:
-  @[https://vocon-it.com/2016/04/06/aws-automation-using-vagrant-part-3-creating-a-docker-host-on-aws-in-10-minutes-using-vagrant/]
-
- • Graviton EC2 instances: [[{1_price,01_PM.radar}]]
-   @[https://www.infoq.com/news/2021/12/amazon-ec2-graviton3-arm/]
-   @[https://www.infoq.com/news/2020/09/aws-ec2-t4g-instances/]
-   @[https://www.datacenterknowledge.com/amazon/aws-launches-cloud-instances-powered-custom-arm-chips]
-   @[https://aws.amazon.com/es/blogs/aws/new-ec2-instances-a1-powered-by-arm-based-aws-graviton-processors/]
-    - processor-based to optimize workloads on performance and costs.
-    - latest addition to the Graviton2-based instances is the low cost
-      burstable general-purpose T4g instances.
-    - In the past, AWS released EC2 T3g instances for general-purpose
-      workloads in a very cost-effective manner.
-      T4g: increased peak performance at a low cost.
-    - powered by AWS Graviton2, custom-built with 64-bit Arm Neoverse cores.
-
-  • Quarkus+Lambdas @[https://quarkus.io/guides/amazon-lambda-http]
-
-  • AWS CDK (INFRASTRUCTURE as CODE, deprecates CloudFormation)
-    - A 10 lines AWS-CDK produces a 500 lines CloudFormation config file.
-    @[https://docs.aws.amazon.com/cdk/latest/guide/home.html]
-
-    - Cloud Development Kit (CDK) for Terraform:
-      By AWS, HashiCorp, and Terrastack
-    @[https://www.infoq.com/news/2020/07/cdk-terraform/]
-      |Python    |
-      |Typescript| -> cdktf -> |terraform json| -> terraform apply
-      cdktf also supports to deploy resources to AWS, Azure, Google Cloud.
-
-
-    Home   @[https://aws.amazon.com/cdk/]
-    Doc    @[https://docs.aws.amazon.com/cdk/latest/guide/home.html]
-    GitHub @[https://github.com/aws/aws-cdk]
-    Gitter @[https://gitter.im/awslabs/aws-cdk]
-    StackO @[https://stackoverflow.com/questions/tagged/aws-cdk]
-    - JAVA API Ref:
-    @[https://docs.aws.amazon.com/cdk/api/latest/java/index.html]
-
-    - TypeScript and Python:
-    @[https://aws.amazon.com/blogs/aws/aws-cloud-development-kit-cdk-typescript-and-python-are-now-generally-available/]
-
-    - Alternatives includ Terraform, Sceptre, https://serverless.com/framework...
-    @[https://www.reddit.com/r/aws/comments/bfh7mj/how_to_be_more_productive_with_cloudformation/]
-
-  • AWS Outposts: Hybrid Data Center Architectures [[{arch.hybrid}]]
-  @[https://www.infoq.com/news/2020/01/AWS-Outposts-Hybrid/]
-    Amazon Releases AWS Outposts, Enabling Hybrid Data Center Architectures
-  - based upon Amazon public cloud compute architecture but hosted
-    @customer data center addressing local processing and low latency
-    requirements. Customers place infrastructure orders online, Amazon
-    will then ship the modular compute rack and a trained AWS technician
-    will connect, set up and validate the installation.
-
-  • Systems Manager:
-  @[https://blogs.sequoiainc.com/raspberry-pi-remote-management-with-aws-ec2-systems-manager/]
-    - Remote Management agent based platform for configuring, controlling,
-      and governing on premise servers from within the EC2 console.
-      How-To:
-    - install Systems Manager agent on on-premises server, then
-      execute commands remotely, ensure servers remain in specific state,
-      and enforce configuration management requirements.
-
-  • EventBridge Schema Registry: [[{arch.event_stream,01_PM.TODO}]]
-    - developers can store the event structure-or schema-in a shared
-      central location and map those schemas to code for Java/Python/Typescript,
-      using events as objects in their code.
-    - Alternatives include Microsoft EventGrid (including advanced features like
-      filtering, retry policies, and support for CloudEvents but missing a schema
-      registry capability), Triggermesh's EveryBridge (event bus that can consume
-      events from various sources and trigger multi-cloud lambdas).
-
-  • Kendra: accurate and easy-to-use enterprise search service powered NLP  [[{use_case.search}]]
-   @[https://aws.amazon.com/es/kendra/]
-    - content added from: - file systems, SharePoint, intranet sites,
-      file sharing services, ... into centralized location.
-
-  • What typical 100% Serverless Architecture looks like in AWS! [[{arch.serverless.101,02_doc_has.diagram,01_PM.TODO}]]
-  @[https://medium.com/serverless-transformation/what-a-typical-100-serverless-architecture-looks-like-in-aws-40f252cd0ecb]
-
-  • donnemartin/saws: supercharged AWS command line interface (CLI).  [[{qa.UX}]]
-    @[https://github.com/donnemartin/saws]
-
-
-  • Access Analyzer:  [[{security.auditing}]]
-    https://docs.aws.amazon.com/IAM/latest/UserGuide/what-is-access-analyzer.html
-
-
-  • https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-quotas.html
-
-  • JDK JAVA + maven:
-   https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-project-maven.html#configuring-maven-individual-components
-
-  • Troubleshooting AWS Access Denied
-    https://aws.amazon.com/premiumsupport/knowledge-center/troubleshoot-iam-permission-errors/
-
-  • TODO: @[https://www.infoq.com/news/2020/01/aws-efs-iam-access-points/]
-
-  • LocalStack:
-    - easy-to-use test/mocking framework for developing Cloud applications.
-    - focus is primarily on supporting the AWS cloud stack.
-  @[https://github.com/localstack/localstack]
-
-  • HashiCorp Terraform AWS Provider Introduces Significant Changes to Amazon S3 Bucket Resource
-    https://www.infoq.com/news/2022/02/terraform-aws-provider-s3/
-  • Cloud AWS Releases First Graviton3 Instanceshttps://www.infoq.com/news/2022/05/aws-ec2-graviton3/ 
-    The C7g instances are currently available only in the Northern
-    Virginia and Oregon regions, with more regions expected in the
-    future. The new class starts at $0.0363/hr on demand for the smallest
-    c7g.medium, a 7% increase on the pricing of the previous generation
-    c6g.medium ($0.034/hr).
-  • AWS Releases Preview of a New Low-Code Development Tool with Amplify Studio at re:Invent
-    https://www.infoq.com/news/2021/12/aws-amplify-studio-preview/
-  • Incorrect IAM Policy Raised Questions About AWS Access to S3 Data
-    https://www.infoq.com/news/2022/01/aws-iam-s3-access/
-  • AWS Introduces Lambda Function URLs to Simplify Serverless Deployments
-    https://www.infoq.com/news/2022/04/aws-lambda-function-urls/
-    Function URLs are best for use cases where you must implement a
-    single-function microservice with a public endpoint that doesn’t
-    require the advanced functionality of API Gateway, such as request
-    validation, throttling, custom authorizers, custom domain names,
-    usage plans, or caching. For example, when you are implementing
-    webhook handlers, form validators, mobile payment processing,
-    advertisement placement.
-  • Amazon S3 Event Notifications with Amazon EventBridge
-    https://www.infoq.com/news/2021/12/amazon-eventbridge-s3-events
-  • Pulumi Announces AWS Native Provider
-    https://www.infoq.com/news/2021/11/pulumi-aws-native-provider/
-  • Amazon S3 Adds New Storage Class for Long-Lived Data and Simplifies Access Management
-    https://www.infoq.com/news/2021/12/s3-glacier-instant-retrieval/
-  • (storage) How to Install MinIO Object Storage Server on Debian 11
-    https://www.howtoforge.com/how-to-install-minio-storage-server-on-debian-11/
-  • Amazon Releases DL1 Instances Powered by Gaudi Accelerators
-    https://www.infoq.com/news/2021/11/amazon-habana-gaudi/
-     The new instances include the Habana SynapseAI SDK, which is
-    integrated with the TensorFlow and PyTorch machine learning
-    frameworks. They were originally announced by Andy Jassy, then CEO at
-    AWS, at re:Invent 2020.
-  • AWS Expands Amazon Detective for Kubernetes Workloads on Amazon EKS
-    https://www.infoq.com/news/2022/07/amazon-detective-k8s-eks/
 
