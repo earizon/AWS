@@ -1,0 +1,48 @@
+[[{devops.git]]
+# AWS CodeCommit  
+
+- See also CodeStar for a global solution.
+- "Github" like fully-managed build service ( build, test, and 
+  integrate code more frequently.
+- High Availability and Durability (S3+DynamoDB as storage backend).
+- Encrypted data redundantly stored across multiple facilities.
+- up to 1,000 repositories by default and no limits upon request.
+- AWS SNS Notifications and Custom Scripts.
+  notifications include status message + link to resource
+- Amazon SNS HTTP webhooks or Lambda functions reactive programming
+- CodeCommit Access Setup:
+  <https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-gc.html?icmpid=docs_acc_console_connect_np>
+  simplest way:
+  ```
+  | 1) → Setup IAM User credentials for CodeCommit:
+  | ·    → https://console.aws.amazon.com/iam/ → Users → IAM user for CodeCommit:
+  | ·      → Check no policies expressly deny KMS (needed for encryption).
+  | ·        → Add Permissions
+  | ·          → select AWSCodeCommitPowerUser Policy
+  | ·            (or alternative managed policy with CodeCommit access).
+  | ·            → Review → Confirm
+  | 2) → use them credentials for HTTPS connections.
+  ```
+- Ussage:
+  ```
+  | @ AWS Web Console ──────────────────────────
+  | → Open <https://console.aws.amazon.com/codesuite/codecommit/home>
+  |   → Find + choose appropiate repository 
+  |     → Clone URL  → choose protocol → copy URL
+  |
+  | @ Local PC ───────────────────────────────────
+  | $ git clone https://git-codecommit.us-east-2.amazonaws.com\
+  |             /v1/repos/MyDemoRepo my-demo-repo
+  ```
+
+- See also:
+  <https://docs.aws.amazon.com/codecommit/latest/userguide/how-to-share-repository.html>
+  <https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control.html>
+
+* AWS CodeBuild : fully-managed build service (build, test, integrate)
+
+* AWS CodePipeline : CI/CD service.
+- Each project comes pre-configured with an automated pipeline
+  that continuously builds, tests, and deploys your code with
+  each commit.
+[[devops.git}]]

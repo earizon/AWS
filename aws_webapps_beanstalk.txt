@@ -1,0 +1,7 @@
+# Beanstalk [[{]]
+
+- deploy+scale webapps Java/.NET/Node/...
+  on familiar servers such as Apache/Nginx/Passenger/..
+- <https://aws.amazon.com/elasticbeanstalk/>
+[[}]]
+

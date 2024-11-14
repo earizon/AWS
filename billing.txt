@@ -1,0 +1,77 @@
+[[{PM.billing_control]]
+# Billing Control
+
+## Price Calculator and Free Tier [[{PM.PRICE.101.calculator]]
+* Simple Monthly Calculator: <https://calculator.s3.amazonaws.com/index.html>
+  Real/current cost can be seen in AWS's billing page:
+  ```
+  |   "bottom of the page" -> "Set your first billing alarm" -> set email alarms.
+  | 
+  |   ┌─ WARN: for users that are not in the East of the US: ──────────────
+  |   │ """ I was a little bit confused that the  "Set your first billing alarm"
+  |   │     link 
+  |   │ <https://console.aws.amazon.com/cloudwatch/home?region= us-east-1 &#s=Alarms&alarmAction=ListBillingAlarms>
+  |   │     contains a variable 'region=us-east-1', while I am using resources in 'eu-central-1' only.
+  |   │     The corresponding link https://eu-central-1.console.aws....?region=eu-central-1...
+  |   │     does NOT allow to set any billing alarms.
+  |   │     I assume that billing for all regions is performed centrally in US East for all regions (I hope).
+  |   └──────────────────────────────────────────────────────────────────────
+  ```
+
+## FREE TIER
+* <https://aws.amazon.com/>
+
+  ```
+  | -> scroll down -> push the "Get Started for Free"  -> free tier trial account
+  | - up to 12 months
+  | - up to two time 750 hrs of computing time;
+  | - Linux/Windows 2012 server on a small VM:
+  |     WARN :
+  |   - t1.micro is free tier
+  |   - t2.nano  is *NOT* free tier
+  ```
+
+[[{PM.PRICE.free,101,PM.TODO]]
+### Is Free Tier Really Free? 
+<https://www.infoq.com/news/2020/09/aws-free-tier/>
+  ""... The AWS Free Tier is free in the same way that a table saw is
+  childproof. If you blindly rush in to use an AWS service with the
+  expectation that you won’t be charged, you’re likely to lose a
+  hand in the process...""
+
+* three different offers depending on the product used:
+* "always free":
+  * 1 million requests per month on AWS Lambda
+  * 25GB of storage on DynamoDB.
+* "12 months free":
+  * Amazon EC2
+  * RDS
+* short-term "trials":
+  * Amazon Inspector
+  * GuardDuty.
+
+* long term risk associated with this complexity:
+
+>  """..It seems pretty sensible to spin up your free EC2 instance in a
+>    private subnet—and then you're very reasonably surprised when you
+>    get charged almost $80 a month for the Managed NAT Gateway attached
+>    to that subnet. This has an unfortunate side effect of teaching
+>    beginners to use AWS services in ways that won't serve them well in
+>    corporate environments.
+>
+>     Oracle, Azure, and GCP have all mastered this problem in a far more
+>    comprehensive, less user-hostile way.
+>
+>     Azure free account includes 12 months of popular services and $200
+>    credit, the Google Cloud free program offers 20+ products and $300
+>    credit.   An important difference with AWS is the ability to not be
+>    charged until the user manually switches to a paid account.
+>
+>    Corey Quinn closes with an advice for users who receive unexpected bills:
+>
+>     Open a ticket with AWS Support. ...    If it’s your first time with an
+>    overage, they will almost universally waive the fee.
+[[PM.PRICE.free,101}]]
+[[}]]
+
+[[PM.billing_control}]]

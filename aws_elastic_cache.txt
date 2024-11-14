@@ -1,0 +1,16 @@
+[[{arch.cache,arch.real_time,PM.TODO]]
+# Elastic Cache 
+
+* Manager for redis/memcache cluster
+
+* <https://aws.amazon.com/elasticache/>
+* Managed service for popular OOSS compatible in-memory data stores.
+* boost performance of databases by retrieving data from high throughput/low-latency
+  in-memory data stores.
+* popular choice for real-time use cases like Caching, Session Stores, 
+  Gaming, Geospatial Services, Real-Time Analytics, and Queuing.
+  [[troubleshooting.performance]]
+  requiring sub-millisecond response times.
+[[arch.cache}]]
+
+

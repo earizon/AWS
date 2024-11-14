@@ -1,0 +1,7 @@
+# EKS (AWS Kuberentes)
+
+## A.Detective for EKS [[{]]
+
+* <https://www.infoq.com/news/2022/07/amazon-detective-k8s-eks/>
+[[}]]
+

@@ -1,0 +1,412 @@
+[[{computing.ec2]]
+# Computing Services
+
+
+[[{devops.containerization,computing.ec2,doc_has.decission_tree]]
+## Container Service Decission Tree
+
+  ```
+  | Q: Where do you want to run this container?
+  | ├· A1: on premisses
+  | ·      Q: Kubernetes?
+  | ·      A1: YES  ·······> EKS anywhere
+  | ·      A1: NO   ·······> ECS anywhere
+  | ·      A1: OpenShift ··> ROSA
+  | ├· A2: in the cloud:
+  | ·      What will this container do?
+  | ·      A1: run build jobs ···> CodeBuild
+  | ·      A2: run batch jobs ···> BATCH
+  | ·      A3: run apps.
+  | ·          Q: "Serverlessly"?
+  | ·             A1: Yes
+  | ·                 Q: For real?
+  | ·                 A1: Yes ···> LAMBDA
+  | ·                 A2: No  ···> Fargate
+  | ·             A2: NO
+  | ·                 Q: Who will manage it?
+  | ·                 A1: K8S ···> EKS
+  | ·                 A2: AWS
+  | ·                     Q: Want CI/CD too?
+  | ·                        A1: Sure?
+  | ·                            Q: Already using Elastic Beamstalk?
+  | ·                            A1: Yes ···> Elastic Beanstalk
+  | ·                            A2: No  ···> App Runner
+  | ·                        A2: Not from you ···> ECS
+  | ·                 A3: myself
+  | ·                     Q: Gonna be doing this a lot?
+  | ·                        A1: NO ·····> Lightsail
+  | ·                        A2: YES ····> EC2
+  | └· A3: Sort of both? ··> GreenGrass
+  ```
+[[}]]
+
+[[{computing.ec2]]
+
+## EC2 (VMs)
+
+  ```
+  | Install Ubuntu from EC2 image repository
+  | Console -> EC2 -> "Launch Instance".
+  | ·> Choose "Ubuntu HVM version" (looks to have better performance)
+  |    (reminder: only t1.micro is available for "Free tier"
+  |    ·> Review setup and "Launch"
+  | └ → Adapt Security Settings
+  |     · - click on "Edit security groups"
+  |     ·   - From the drop down list of the Source, select "My IP",
+  |     ·     then press "Review and Launch".
+  |     · - review instance data again and "Launch"
+  |     └→ Create and download  SSH Key Pair
+  |        · - call the key "AWS_SSH_key" and download the generated PEM file
+  |        └ → Check Instance Status
+  |            - go to instnce and check that "Status Checks" are being performed.
+  |            - Public IP and DNS name (FQDN) will be displayed too.
+  ```
+  ```
+  | $ aws ec2 ... (start|... ¹)
+  | 
+  | 
+  | ¹ start
+  |   stop/reboot
+  |   terminate   <·· WARN: Terminate: deletes instance + its root storage.  
+  |                   Enable Termination protection to avoid accidental termination. [[troubleshooting.101]] 
+  |   attach volumes
+  |   ENIs,
+  |   ...
+  |
+  | EBS backed instances can be stopped (vs terminated) and
+  |     restarted without data loss.
+  |     Associated EBS volumes are still charged while the VM is off [[PM.PRICE.101]]
+  ```
+                      
+  ```
+  | EC2 name explanation
+  | M5d.xlarge
+  | │││ └─┬──┘
+  | │││   └─ Instance size. For each family vCPU/RAM/price scales linearly. [[{PM.PRICE}]]
+  | ││└ additional capabilites
+  | │└ Intance generation. It changes over time.
+  | └ Intances family ("M": "Memory" optimized).
+  |   Mnemonic   | Category           | Description                     | Use-cases         [[{escalability}]]
+  |   --------   | --------           | -----------                     | ---------
+  |   (M)ain/ ···· General purpose ···· Balance of CPU/mem/net ·········· General
+  |   (M)edium
+  |   (C)ompute ·· Compute optimized ·· Advanced CPUs  ·················· Modeling, ddbbs
+  |   (H)DD ······ Storage optimized ·· Local HDD storage ··············· Map reduce
+  |   (R)am ······ Memory Optimized  ·· More ram per $  ················· In-memory caching
+  |   (X)treme ··· Memory Optimized ··· Terabytes of RAM and SSD ········ In-memory ddbbs
+  |   (I)ops ····· IO optimized ······· Local SSD storage, High IOPS ···· NoSQL ddbbs
+  |   (G)PU ······ GPU Graphics ······· GPUs with video encoders ········ 3D rendering
+  |   (P)ictures · GPU Compute ········ GPUs with tensor cores ·········· ML
+  |   (F)ield ···· Accelerated Comp. ·· FPGA, Custom hardw .............. Genomics,Fin.analytics
+  |   (t)iny ····· Burstable, Shared ·· Web servers
+  |   (T)urbo ···· CPUs, lowest cost: *WARN*: T2/T3 unlimited provides *unlimited burst*
+  |                but extra pays if going over credit balance.
+  ```
+
+
+[[{PM.PRICE.101]]
+## Price options:
+- On-Demand: No upfront cost
+- Reserved : Up to 75% cheaper if used frequently for long time
+- Spot     : Cheapest ones. Use-case: tolerant to interruption apps.
+             WARN: VM deallocated when another customer pays more for it.
+- t2.micro == is free tier.
+
+WARN:
+- $0.01/GB for transfer among availability zones. 
+[[}]]
+
+### SPOT instances research [[{]]
+* C&P from <https://www.infoq.com/news/2023/06/aws-spot-instances-cost-research/>
+  (2023-06-19)
+  ```
+  | ... m3, a1, t3a, and g5g experienced significant price increases.
+  | ... the research group provisioned 5.5 million spot instances across
+  | various regions. ... Since the start of 2023, there has been a
+  | significant increase in spot ratios, particularly in us-east-1 region.
+  |
+  | investigation delved into the aspect of instance preemption:
+  | - each server was operational for a duration of 10 minutes, then shut down.
+  | - the following observations were made:
+  |
+  | ... "Looks like the law of diminishing returns is catching up
+  |   when it comes to spot instances". ... "If more people are using
+  | spot at the same time, there's less spot instances available'?"
+  | ... Considering the diminishing benefits, organizations should reevaluate
+  | their architecture decisions and prioritize approaches like Savings
+  | Plans for more guaranteed savings,
+  ```
+[[}]]
+[[computing.ec2}]]
+
+## VM AMI Images
+
+- AMI stands for Amazon Machine Image:<br/>
+  raw/VHD/VMDK/OVA file with: OS, software, configuration
+  - published by: AWS | custom private (Uploaded+imported) | market place
+  - NOTE: AWS Official linux AMIs default to user "ec2-user" [[{security.aaa}]]
+
+- AKI == Amazon Kernel Image (AKI) [[{PM.TODO}]]
+- ARI == Amazon Ramdisk Image (ARI)[[{PM.TODO}]]
+
+- Instance IP and DNS name change on reboot. 
+- "Elastic IP" (lifetime independent of VM) must be reserved
+  and assigned to the instance.
+- "Elastic IP" is *free of charge*. [[{PM.PRICE.free}]]
+
+[[{security.101,security.SG]]
+- EC2 Security Groups == "Virtual firewalls. Capabilites depends on S.G. Type
+
+  ```
+  | Sec.Group Type│ Capabilites
+  | ──────────────┼────────────────────────
+  |  EC2-Classic  │ Control    out traffic (deprecated?)
+  | ──────────────┼────────────────────────
+  |  VPC          │ Control in/out traffic
+  | ───────────────────────────────────────
+  ```
+[[security.101,security.SG}]]
+
+  ```
+  |         allows running VM collect data about itself
+  |        ┌────────────────┴─────────────────────┐
+  | $ curl http://169.254.169.254/latest/meta-data/ 
+  | ami-id
+  | ami-launch-index
+  | ami-manifest-path
+  | block-device-mapping/
+  | iam/
+  | identity-credentials/
+  | instance-life-cycle
+  | instance-type
+  | ...
+  | placement/
+  | security-groups
+  | 
+  | $ curl http://169.254.169.254/latest/meta-data/block-device-mapping/
+  | ami
+  | ephemeral0
+  | ephemeral1
+  |
+  | $ http://169.254.169.254/latest/meta-data/iam/security-credentials/$iam_role_name
+  ```
+
+- CloudWatch can be used to monitor/alert about EC2 instances.  [[{security.monitoring}]]
+
+  ```
+  Tenancy Options -------------------------------------------
+  - Shared tenancy     : (def). host 1←→ N Customers/M VMs
+  - Dedicated instances:        host 1←→ 1 Customer /M VMs
+  - Dedicated host     :        host 1←→ 1 Customer /1 host (useful to fix licence issues)
+  ```
+
+  ```
+  | Expected load and Instance type reservation
+  | ^
+  | │       o           b           o              Lecture:
+  | │      ooo          b          ooo      b      r: Reserved   : manage normal loads
+  | │     oooooo        b         oooooo    b      o: on-demand  : manage load peaks
+  | │rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr  b: batch tasks: short time recoverable task
+  | │rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+  | └──────────────────────────────────────────
+  |   ···> time
+  |
+  | See also:
+  | <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/virtualization_types.html>
+  ```
+
+## EC2 In detail 
+
+<!-- @ma page 106: http://127.0.0.1:8000/Cloud/AWS-Certified-Solutions-Architect-Official-Study-Guide.pdf -->
+
+[[{]]
+### Placement Group
+
+Place instance on same placement group (same hardware) for High 
+bandwidth I/O [[{escalability.networking}]]
+
+When creating a placement group, we must switch among two strategies:
+
+- Cluster: place instances into low-latency group ("same rack") in a single Availability Zone.
+  WARN: If the rack fails, all instances fails at the same time.
+- Spread : place instances across underlying hardware (max 7 instances per group per AZ)
+  - Ensures all instances are located in different hardware.
+  - Can span across multi AZ.
+  - Minimizes failure risks.
+- Partition: Spreads instances across many different partitions
+  (which rely on different sets of racks) within single AZ.
+  - Use cases: HDFS, HBase, Cassandra, Kafka
+
+- Use als Enhanced networking to provide high-performance in a single root     
+I/O virtualization (SR-IOV) and lower latency/jitter in supported
+instances (C4,C3,D2,I2,I3,H1,C5,M4,X1,M5,R3,...). [[scalability.networking]]
+- enhanced networking is free of charge [[price.101]].<br/>
+  - Limitations:
+    - Instances must be launched in a VPC
+    - Instances must be launched from a HVM AMI
+  - Elastic Network Adapter: High performance
+  - Elastic Fabric Adapter: High Performance Computing (Linux only)
+
+
+[[}]]
+
+
+  - virtualization types:
+    - Hardware Virtual Machine (HVM), prefered, take advantage of HW extensions.   [performance]
+    - Paravirtual (PV)
+
+    Monitoring Instances                                                           [monitoring]
+    - Use CloudWatch: collect logs, monitor logs, set alarms.                      [troubleshooting]
+    - basic monitoring by default free of cost, capturing data every 5 minutes     [price]
+      Up to 2 weeks of history recorded.
+    - detailed monitoring, every minute. Has non free cost
+    - alarms: receive notifications or automated actions when crossing thresholds. [notification.automation]
+              Alarms can be simulated with AWS cli.
+
+    Backup and Recovery
+    - Regularly: create an AMI from EC2 running instance as template to quickly restory custom config.
+    - Regularly: back up EBS volumes using snapshots in Amazon S3.
+    - deploy critical components across multiple Availability Zones (AZs).
+    - Attach manually an Elastic IP address or network interface to an alternate EC2 instance for recovery purposes
+    - Regularly: test the process of recovering your instances from volume fail.
+    - incremental backups is done through "Snapshots".
+
+    Elastic Network Interface (ENI)
+    - 1 default ENI per instance with:
+      - one primary private IPv4 (optionally 2+)
+      - one  Elastic IP  (static IP) per private IPv4 (optional)
+      - one public IPv4
+      - one or more IPv6
+      - one or more security group
+      - a mac address
+      - source destination check flag
+      - description of ENI
+
+  - An instance may immediately terminate if:                      [troubleshooting]
+    - EBS volume limit reached or snapshot is corrupt
+    - Missing permissions to access the KMS key for EBS volume decryption
+
+  - TODO: Hibernating
+
+    EC2 User Data                                                  [automation][vagrant]
+  - Simple alternative to Vagrant.
+  - Enables to bootstrap instances using EC2 data script.
+    -  bootstrapping  means launching commands when a machine starts
+    → Create EC2 → Configure Instance → Advanced Details → User data
+      → Paste commands:
+        #!/bin/bash
+        ...
+
+    SESSION MANAGER: (better alternative to ssh) [[{security.101,PM.TODO]]
+    - allows to manage SSH users through IAM.
+    - fully managed and auditable Manager to manage EC2/on-premises/VMs
+      access, through an interactive one-click browser-based shell or through
+      AWS cli.
+    -  No need to open inbound ports, maintain bastion hosts, or manage SSH
+       keys. PREFERRED TO SSH!!!.
+    - No requirement to store SSH keys locally or on server.
+    - Requires to have ssm installed on EC2 [[}]]
+   ┌─ <https://github.com/PoeBlu/ssh-over-ssm>
+   │ ssh-ssm.sh is an small wrapper around SSM and ssh to create temp keys on demand and
+   │  init ssm sessions.
+   │
+   │* PRESETUP)
+   │    - download/install session-manager-plugin for aws cli.
+   │    - $ aws ssm start-session  # init SSM session
+   │    - ~/.aws/{config,credentials} properly configured
+   │    - connect SSH over SSM.
+   │    - Users IAM permissions to reach their regional ssm.{region}.amazonaws.com endpoint (via HTTPS).
+   │    - IAM ec2-instance-profile allowing SSM access.
+   │    - SSM agent installed on EC2 instance (may require agent updates).
+   │    - AWS cli requires you install  locally
+   │
+   │  - SSM advantages:
+   │    - connect private instances in VPC without "jumping" through a public-facing bastion.
+   │    - No need to store any SSH keys locally or in server.
+   │    - fine-grained permissions for SSM 'Documents' (AWS-PasswordReset, AWS-StartPortForwardingSession,..)
+   │
+   │  - ~/.ssh/config:
+   │    Host production
+   │      Hostname i-0xxxxxxxxxxxxxe28
+   │      User ec2-user
+   │  +   ProxyCommand bash -c "AWS_PROFILE=projectX.prod ~/bin/ssh-ssm.sh %h %r"     <··· Get sure previsouly that SSM agent
+   │                                                                                       is working for the instance
+   │    Host test
+   │      Hostname i-0xxxxxxxxxxxxxe49
+   │      User ec2-user
+   │  +   ProxyCommand bash -c "AWS_PROFILE=projectX.test ~/bin/ssh-ssm.sh %h %r"
+   │
+   │    Match Host i-*
+   │      ...
+   │  - If a key is available via ssh-agent ssh-ssm.sh will use it, otherwise a (15sec) temp.key is used.
+   │
+   │  $ export AWS_PROFILE=int-monitor1
+   │  $ python3 ssm_instances.py update  # <··· Update data about ssm instances.
+   │  $ python3 ssm_instances.py         # <··· List&update SSM instances (checkagent on each instance)
+   │  instance id           |ip             |agent up-to-date ...
+   │  ------------------------------------------------------- ...-
+   │  i-0xxxxxxxxxxxxx3b4   |10.xx.xx.6     |True             ...
+   │  i-0xxxxxxxxxxxxx76e   |10.xx.xx.142   |True             ...
+   │  i-0xxxxxxxxxxxxx1b6   |10.xx.xx.75    |True             ...
+   │  ...
+   │  $ aws-mfa
+   │  INFO - Validating credentials for profile: default
+   │  INFO - Your credentials are still valid for 14105.807801 seconds they will expire at 2020-01-25 18:06:08
+   │
+   │  $ ssh test
+   │  Last login: Sat Jan 25 08:59:40 2020 from localhost
+   │  ...
+   │  $ scp ~/bin/ssh-ssm.sh prod
+   │  $ ssh ...
+   └───────────────────────────────────────────────────────────────
+[[}]]
+
+[[{troubleshooting.ec2,PM.TODO]]
+## EC2 Serial Console: Troubleshoot Boot and Networking Issues
+<https://www.infoq.com/news/2021/04/aws-ec2-serial-console/>
+[[troubleshooting.ec2}]]
+
+[[{PM.PRICE,PM.radar]]
+## EC2 Graviton (ARM)
+* <https://www.infoq.com/news/2021/12/amazon-ec2-graviton3-arm/>
+* <https://www.infoq.com/news/2020/09/aws-ec2-t4g-instances/>
+* <https://www.datacenterknowledge.com/amazon/aws-launches-cloud-instances-powered-custom-arm-chips>
+* <https://aws.amazon.com/es/blogs/aws/new-ec2-instances-a1-powered-by-arm-based-aws-graviton-processors/>
+- processor-based to optimize workloads on performance and costs.
+- latest addition to the Graviton2-based instances is the low cost
+  burstable general-purpose T4g instances.
+- In the past, AWS released EC2 T3g instances for general-purpose
+  workloads in a very cost-effective manner.
+  T4g: increased peak performance at a low cost.
+- powered by AWS Graviton2, custom-built with 64-bit Arm Neoverse cores.
+
+### Graviton 3 (2022-05) [[{]]
+<https://www.infoq.com/news/2022/05/aws-ec2-graviton3/>
+* The C7g instances are currently available only in the Northern
+  Virginia and Oregon regions, with more regions expected in the
+  future. The new class starts at $0.0363/hr on demand for the smallest
+  c7g.medium, a 7% increase on the pricing of the previous generation
+  c6g.medium ($0.034/hr).
+[[}]]
+
+[[{computing.firecracker,PM.TODO,PM.PRICE.firecracker,arch.serverless]]
+## Firecracker Ligthweight VMs 
+* <http://www.eweek.com/security/aws-boosts-serverless-security-with-firecracker-microvms>
+- Virtualization technology based on KVM that can launch microVMs in non-virtualized
+  environments in less than 125 ms and thousands of new instances per seconds.
+- Battle-tested, power high-volume AWS services like AWS Lambda and AWS Fargate.
+- Open Source(written in Rust).
+- Low Overhead: ~5 MiB RAM per microVM:
+  - Simple Guest Model to minimize device model:
+    - 1 network device, 1 block I/O device,
+      1 Programmable Interval Timer, 1 KVM clock,
+      1 serial console, 1 partial keyboard enough 
+       to allow microVM resets.
+  - Firecracker Static Linked process jailed with cgroups and seccomp BPF.
+<https://firecracker-microvm.github.io>
+- Base stack for Fargate, the cheap alternative to EC2 when load is below 20% of CPU. [[{PM.PRICE}]]
+[[computing.firecracker}]]
+
+
+
+[[computing.ec2}]]

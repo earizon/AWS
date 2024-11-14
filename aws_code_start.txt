@@ -1,0 +1,20 @@
+[[{devops.git,devops.low_code,PM.low_code,PM.TODO]]
+# CodeStar App.Development 
+
+* <https://aws.amazon.com/codestar/>
+
+* Centralize development activities:
+  ```
+  | backlog -> "tickets" -> Project ->  commits    -> builds, -> deployments [[{qa}]]
+  | └── based on JIRA ─┘    Templates   monitoring    tests      └ Lambda, ┘
+  |                                                            EC2, Beanstalk
+  ```
+* project access management with built-in role-based policies:
+  ```
+  | [ owners, contributors, viewers ]
+  ```
+
+* Integrates with CodeDeploy
+*  ZERO COST: Charged only for AWS resources provisioned for devel/run apps.  [[PM.PRICE.free]]
+* Source Control alternatives: AWS CodeCommit, GitHub, ...
+[[}]]

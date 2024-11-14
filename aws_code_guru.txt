@@ -1,0 +1,11 @@
+## CodeGuru [[{]]
+
+* <https://www.infoq.com/news/2021/01/aws-devops-guru>
+* 2020—June: general availability launch.
+* uses ML and automated reasoning to automatically identify
+  critical issues, security vulnerabilities, and hard-to-find bugs
+  during application development.
+* faster than any manual code review process, and can scan
+  1M lines of code in 30 mins.
+* Provides recommendations on how to fix the issues it finds.
+[[}]]

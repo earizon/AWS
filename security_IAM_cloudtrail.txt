@@ -1,0 +1,20 @@
+[[{audit.IAM.cloudtrail,security.IAM,,PM.TODO]]
+
+# CloudTrail: IAM Audit 
+
+* <https://aws.amazon.com/cloudtrail/>
+* Auditing of governance, compliance, operational-and-risk management 
+  for IAM users/roles or AWS services actions in AWS CLI, Web Console, 
+  SDK or APIs.
+* Event-stream based.
+* log, continuously monitor, and retain account activity related to 
+  actions across AWS infrastructure.
+* Services include: View, search, download, archive, analysis and 
+  notification alarms.  WARN: Not free!
+* Event history of your AWS account activity, including actions taken 
+  through the AWS Management Console, AWS SDKs, command line tools, and 
+  other AWS services.
+* simplifies security analysis, resource change tracking, and 
+  troubleshooting.
+
+[[audit.IAM.cloudtrail}]]

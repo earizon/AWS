@@ -1,0 +1,5 @@
+## EBS: Elastic Block Storage  [[{]]
+(to be managed directly by OS or DDBB).
+[[}]]
+
+

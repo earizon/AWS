@@ -1,0 +1,89 @@
+[[{networking.101]]
+# Network Core Services 
+
+  ```
+  · Route 53     : DNS  (IPv4 and IPv6)
+
+  · ENI          : (logical) elastic network interface "inside" VPC.
+    <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html>
+    Main attributes:
+    - description
+    - primary      private IPv4 address in VPC range
+    - 0+ secondary private IPv4 address in VPC range
+    - 1 Elastic IP address (IPv4) per private IPv4 address
+    - 1 public IPv4 address
+    - 1+ IPv6 addresses
+    - 1+ security groups
+    - 1 MAC address
+    - A source/destination check flag
+
+  · VPC  : Virtual Private Cloud: logically isolated IPv4/IPv6 Cloud.
+     with complete control over your virtual networking environment.
+     ( IP address range, subnets, route tables and network gateways).
+
+  · ELB : Elastic Load Balancing.
+    distributes incoming traffic across multiple targets(EC2 instances,
+    containers, IP addresses, Lambda functions,...) in 1+ Availability Zones.
+    - 3 types of load-balancers
+
+  · Direct Connect: service solution to setup dedicated network connection
+                    from premises to AWS.
+
+  · Security Groups (SG): "Firewalls" for services (EC2, lambdas, ...)
+  
+  · CloudFront     : Content Delivery Network [[arch.cache]]
+  ```
+[[networking.101}]]
+
+[[{troubleshooting.networking]]
+##  Automate Sec.Rule Update
+
+1. Verify that AWS user has the needed rights/permissions for AmazonEC2FullAccess policy
+
+2. Test that you can see the security policies
+   ```
+   Example output
+   $ aws ec2 describe-security-groups
+   → {
+   →   "SecurityGroups": [
+   →     {
+   →       "IpPermissionsEgress": [
+   →         ...(egress rules)...
+   →       ],
+   →       "Description": "default VPC security group",
+   →       "IpPermissions": [
+   →         ...(ingress rules)...
+   →       ],
+   →
+   →       "GroupName": "default",
+   →       "VpcId": "vpc-a6e13ecf",
+   →       "OwnerId": "923026411698",
+   →       "GroupId": "sg-0433846d"
+   →     },
+   → ...(other security groups)...
+   → }
+   ```
+
+3. Test adding/removing new ingress rules:
+  ```
+  | $ EXTERNAL_IP01=$(wget http://ipinfo.io/ip -qO -)
+  | $ CidrIp01="${EXTERNAL_IP01}/32"
+  | $ IP_PERMISSIONS=$(cat << EOF
+  |     {
+  |     "IpProtocol": "tcp",
+  |     "FromPort"  : 22," "ToPort"    : 22,
+  |     "IpRanges"  : [{"CidrIp": "${CidrIp01}"}]
+  |     }
+  |   EOF
+  | $ SG_ID="sg-0123456d"
+
+  | $ aws ec2 authorize-security-group-ingress --group-id ${SG_ID} \
+  |       --dry-run \                            ← Check changes. Do not update
+  |       --ip-permissions '${IP_PERMISSIONS}'
+  |   ^^^^^^^
+  |   remove like:
+  | $ aws ec2    revoke-security-group-ingress --group-id ${SG_ID} \
+  |       --ip-permissions '${IP_PERMISSIONS}'
+  ```
+
+[[troubleshooting.networking}]]

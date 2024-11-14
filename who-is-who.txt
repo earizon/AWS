@@ -1,0 +1,14 @@
+# AWS Who is Who [[{]]
+(Forcibely incomplete but still pertinent unordered list of "core" people):
+
+- Danilo Poccia: <https://twitter.com/danilop>
+  - Principal Evangelist, Serverless @AWSCloud.
+  - Author of AWS Lambda in Action from Manning.
+
+- Jeff Barr:
+  - Chief Evangelist for AWS. Author of blog
+   <https://aws.amazon.com/blogs/aws/author/jbarr/> (Since 2004)
+
+- Varun Jewalikar, Software Engineer at Prime Video (See AWS Chaos Engineering)
+- Adrian Hornsby: Principal Developer Advocate (Architecture) at AWS
+[[}]]

@@ -1,0 +1,30 @@
+[[{standards.OPA,security.101.aaa,computing.k8s,QA,PM.TODO]]
+# Open Policy Agent (OPA)
+* OOSS, GENERAL-PURPOSE policy engine that unifies policy enforcement
+  across the stack using a high-level declarative language.
+* It lets you specify policy as code and simple APIs to offload
+  policy decision-making from your software.
+  OPA can be used to enforce policies in microservices, Kubernetes,
+  CI/CD pipelines, API gateways, ...
+* OPA DECOUPLES POLICY DECISION-MAKING FROM POLICY ENFORCEMENT.
+* When your software needs to make policy decisions it queries OPA
+  and supplies structured data (e.g., JSON) as input. OPA accepts
+  arbitrary structured data as input.
+
+  Request → Service  → |query: JSON value|   → OPA  • Policy (Rego lang)
+  (|Event)           ← |Decision (JSON value|←┘     • Data (JSON)
+
+  • E.g.: Kafka Authorization with OPERATOR
+
+   client → OAuth2 A.Ser: Request token
+   client ← OAuth2 A.Ser: JWT token
+   client → kakfa       : Topic generation + JWT token
+   kakfa  → OPA         : Auth request f (operation, principal)
+   OPA    → OAuth2 A.Ser: Check JWT signature
+   OPA    → OPA         : Authorize f(operation, user_claims, policy)
+   OPA    → kafka       : Auth response
+
+* See also K8s Gatekeeper to provide a k8s-native way to enforce OPA
+  policies: </txt_world_domination/viewer.html?payload=../kubernetes/notes.txt>
+
+[[standards.OPA}]]

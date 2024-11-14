@@ -1,0 +1,13 @@
+# AWS MQ [[{arch.message_queue,PM.TODO}]]
+- 2017+
+- managed message broker Apache Artemis (previously called ActiveMQ),
+  compatible with most "industry-standard" protocols like JMS, NMS, 
+  AMQP 1.0 and 0-9-1, STOMP, MQTT, and WebSocket.
+- Vertical scaling, throughput-optimized message brokers
+- 99.9% Service Level Agreement (SLA).
+-  LDAP Authentication and Authorization.
+- Support for RabbitMQ (popular OOSS message broker) announced.
+  <https://www.infoq.com/news/2020/11/aws-amazon-mq-rabbitmq/>
+[[}]]
+
+

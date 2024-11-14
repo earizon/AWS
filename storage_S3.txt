@@ -1,0 +1,167 @@
+# S3 Object Storage [[{storage.s3]]
+
+
+## Object Storage Is All You Need - Justin Cormack, Docker
+**When Jeff Bezos commissioned Amazon S3 he called it "malloc for the 
+web"; since then many people have considered cloud object storage to 
+be a weird kind of non Posix filesystem, but also a great backing 
+store for websites or storing lots of data.***
+
+
+- 99.999999999% object durability over a year, 99.99% availability.
+- EVENTUALLY CONSISTENT: Read data can be stale due to propagation time of S3 replicas within a AWS region.
+- UPDATES ARE ATOMIC: Either new or old data is read. Never mixed.
+- Reduced Redundancy Storage (RRS) can be used for lower-cost non-critical data [[{PM.PRICE}]]
+- Object storage (vs block and file storage)
+  ```
+  http.//bucket01.s3.amazonaws.com/dir1/dir2/object1
+         └──┬───┘                  └──────┬────────┘
+            │                      Object Key ("Unique ID"), Up to 1024 bytes UTF-9 chars.
+            │                      dir1/dir2/ is just a useful string prefix, not real directories.
+            │                      since REST API support search-by-prefix
+            │
+            └─ up to 63 lowercase [a-z][0-9][\/-.], unique name independent of any server or
+               aws account.
+
+  S3 objects = data (Up to 5TB) + metadata (key<string>:value<string>)
+                                  ────────
+                                  system: AWS standard metadata like  last-mod-time, size, Content-type,...
+                                    user  : Client/Project "Custom" metadata
+  ```
+
+- Access through HTTP verbs Range-GET/GET/PUT/POST/DELETE.
+  - Multipart Upload API allows to pause/retry/resume upload. [[{escalability.storage}]]
+    Recomended for 100MB+. Forced for 5GB+.
+  - MF Auth. can be activated to protect DELETE operations.
+  - OBJECT CREATION STEPS: Initialization -> upload of part -> completion.
+
+- pre-signed URLs can be created indicating the bucket name, object key, HTTP methods
+  and expiration date+time.
+
+- Cross-region replica: asynchronously copy src_bucket_reg1 → dst_bucket_reg2 [[{security.backup}]]
+                                            ^(data,metadata,ACLs)
+
+  Useful to decrease read latency, backups, ... [[{escalability.local_data}]]
+  - PRE-SETUP.1): Enable versioning in src/dst buckets
+  - PRE-SETUP.2): IAM policy with AWS S3 perm. to replicate on owner's behalf.
+
+- PUT/POST/COPY/Multipart-Completion/DELETE/ *Events* can be activated     [[{arch.event_stream}]]
+  at bucket level, filtering by keys (or key-prefixes) and sent as input to
+  SNS/SQS/Lambdas.
+
+- Versioning can be enabled for buckets affecting all its objects
+  WARN : once activated it can be suspended, but not removed.
+
+- Access logs can be enabled for a bucket, indicating the destination
+  bucket for new logs. Best practice: add a "logs/" prefix.
+
+## S3 STORAGE CLASSES:
+
+- standard: high durability+availability, low (fist-byte) latency
+            (general purpose data).
+- standard-infrequent access:  (long lived data), As standar but with lower
+            GB/month storage cost.
+- Reduced Redundancy Storage (RRS): Lower durability (4 nines)/
+           lower costs. (easy to reproduce data) [[{PM.PRICE}]]
+- Glacier: "cold data"
+  - Extremenly low cost.
+  - Can be used as S3 storage class or independent service.
+  - Issue a "RESTORE" command and wait 3-5 hours to put data back in S3 RRS.
+
+# S3 STORAGE CLASSES Lifecycle policies:
+- Help to migrate to appropiate class with NO CODE CHANGES. Ex:
+  ```
+  1) "hot" storage (S3 Standard)
+  2) "warn" (S3 infrequent access) 30 days later
+  3) "cold" (Glacier)              90 days later
+  4) "delete"                   3x365 days later
+  ```
+
+  • S3 AAA:
+    - By default only owner is allowed access.
+    - Access to third parties through:
+      - ACLs (legacy) READ/WRITE/FULL CONTROL coarse-grain Access to objects|buckets.
+      - ┌─ bucket policies fine─grain Access ───────────────────────
+        │ - WHO CAN ACCESS
+        │ - FROM WHERE (IP OR CLASSLESS INTER-DOMAIN ROUTING CIDR)
+        │ - TIME OF DAY.
+        │ Similar to Identity and Access Management IAM policies but:
+        │ - linked to buckets (vs IAMs principals).
+        │ - include an explicit ref. to the IAM principal. This principal
+        │   can be associated to different AWS accounts.
+        └───────────────────────────────────────────────────────────
+
+  • Data At rest encryption: [[{security.encryption]]
+    - Server-side encryption (SSE):  encrypts S3 objects (256 AES).
+      (Client side encryption can also be used).
+    - SSE-S3 AWS managed keys: Let AWS manage keys. Every object is encrypted
+      with a unique key followed by a master key later.
+      - AWS rotates master keys (at least) montly.
+    - SSE-KMS keys: AWS handles key-management. User handles keys.
+      It also provides auditing: "who used a given key to access which object".
+    - SSE-C (Custome-provided keys): Use encryption keys without implementing
+      client-side encryption libraries. AWS does encrypt/decrypt with keys
+      out of AWS control.
+    - Client-side encryption options:
+      - use AWS KMS-managed customer master key.
+      - use client-side master key.
+    [[}]]
+
+  • Static Website Hosting with S3:
+    → Create bucket → Upload static files → make files public (world readable)
+      →  Enable static website hosting for bucket :
+         → set index and error page objects.
+         → Create "friendly" DNS name using to
+           ${bucket}.s3-website-${region}.amazonaws.com
+           -     standard CNAME DNS registry
+           - non-standard alias DNS registry (Amazon Route 53 only)
+
+  • Glacier:
+    - Vault ← Up to 1000 vaults per AWS account
+      └ lock ← used to deploy/enforce compliance controls through policies. *1
+      └ archive1-UUID ← encrypted, immutable, Up to 40TB,
+      └ archive2-UUID ← Unique (non-friendly) ID created by AWS at creation time
+      └ ...
+      *1  ex: Write Once, read Many. Policies can be locked (for always).
+   - Up to 5% of data can be retrieved each month [price]
+     Up to ??? daily. Beyond that, fee is incurred.
+   - Glacie  can be used as an S3 storage class to get most of the features .
+
+  [[{]][[}]]
+  ● simple serverless Java app illustrating AWS S3 "Select" SQL query on CSVs@S3
+  <https://github.com/aws-samples/s3-select-phonebook-search>  [[{PM.low_code}]]
+    - No database server required.
+    - S3 Select (2018+) and Amazon S3 Glacier Select allow customers to
+      run SQL queries directly on data stored in S3 and Amazon S3 Glacier.
+    - By retrieving only a subset of the data, customers reduce the amount of [[{PM.PRICE]]
+      data that Amazon S3 transfers, which reduces the cost and latency to
+      retrieve this data.[[}]]
+    - Compatible with CSV, JSON, or Apache Parquet format.
+
+  [[}]]
+
+## S3 strong consistency [[{qa.SLA,]]
+  https://www.allthingsdistributed.com/2021/04/s3-strong-consistency.html
+  https://netflixtechblog.com/s3mper-consistency-in-the-cloud-b6a1076aa4f8
+[[}]]
+
+## s5cmd S3 cli  [[{storage.s3,troubleshooting.storage,QA.UX]]
+
+* <https://github.com/peak/s5cmd>
+- very fast S3 and local filesystem execution tool.
+- supports wide range of object management tasks both cloud and local FSs.
+- List buckets and objects
+- Upload/download/delete, Move/copy/rename objects
+- Set Server Side Encryption using AWS Key Management Service (KMS)
+- Set ACLs for objects/files on the upload, copy, move.
+- Print object contents to STDOUT.
+- Summarize objects sizes, grouping by storage class.
+- Wildcard support.
+- Multiple arguments support for delete operation
+- batch-file support: running commands at (very) high execution speeds
+- Dry run support.
+- S3 Transfer Acceleration support.
+- Google Cloud Storage (and any other S3 API compatible service) support
+- Structured logging for querying command outputs
+- Shell auto-completion
+[[}]]

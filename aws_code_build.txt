@@ -1,0 +1,30 @@
+[[{]]
+# AWS CI/CD flow (CodePipeline+CodeBuild) 
+
+ ```
+ | Ex. Dev Pipeline:                                Flux CD scans every 2
+ |                                                  minutes the Registry
+ |                                                  for new images
+ |                                                       ┌─────────┐
+ |                                  AWS CodeBuild        v         │
+ | │Dev│ → git   → │Git        │ →  (run Buildspec) →  │AWS│     │AWS│
+ |          push   │- ...      │    - test *1          │ECR│     │EKS│
+ |                 │- Buildspec│    - package            │        ^
+ |                                  - build OCI image    └────────┘
+ |                                                    On new image detected
+ |                                                    trigger new deployment
+ | 
+ |                                                          └────┬────┘
+ |                                                        Integration with
+ |                                                      ECR will be similar
+ |  *1:  Run unit tests, Sonarqube(QA), ...
+ |       Deploying sources to the S3 Repository of artifacts.
+ | 
+ |     Buildspec:
+ |       - build (stages) specification YAML file
+ |       - collection of build commands and related settings
+ |       - it can be placed in source code or s3.
+ |       - note:  if 'install' or 'pre_build' fails, build stops.
+ |                if build fails, post_build is still executed.
+ ```
+[[}]]

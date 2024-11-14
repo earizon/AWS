@@ -1,0 +1,18 @@
+# API Gateway [[{arch.api_mng,PM.TODO]]
+
+- <https://aws.amazon.com/api-gateway/>
+- Create, maintain, and secure APIs at any scale.
+  (create/publish/version/monitor/secure APIs).
+- Hides developer from traffic management, CORS support, AAA,
+  throttling, monitoring, and API version management.
+- No minimum fees or startup costs!!!. [PM.PRICE]]
+  pay for API calls received and amount-of-data transferred out
+
+
+## TODO:
+* Labmda Authorizer:
+  <https://www.theguild.nl/enriching-requests-with-an-aws-lambda-authorizer/>
+  - When placed on an Amazon API-Gateway it can provide authorization
+    on requests, but did you know it can also enrich the request with
+    additional session information?
+[[}]]

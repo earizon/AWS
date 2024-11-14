@@ -1,0 +1,38 @@
+[[{QA.UX.notification]]
+# SES: Simple eMail Service 
+* <https://docs.aws.amazon.com/ses/latest/DeveloperGuide/quick-start.html>
+* <https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-getting-started.html>
+
+- $0.10 per thousand email messages.<br/>
+  first 62,000 of month are free. [[PM.PRICE]]
+  
+- Supports SMTP (standard) and AWS REST API ("Simplified?"/non-standard) interface
+
+- USE CASES:
+  ```
+  | OUTGOING:                     INCOMMING:
+  | ===========================   ========================================
+  | - marketing emails.           - autoresponders.
+  | - transactional emails        - unsubscribe systems.
+  |   (order confirmations,...)   - applications generating support tickets
+  | - newsletters
+  | - ...
+  ```
+
+- All industry-standard authentication mechanisms supported:
+  <https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-authentication.html>
+  - Domain Keys Identified Mail (DKIM)
+  - Sender Policy Framework (SPF)
+  - Domain-based Message Authentication, Reporting and Conformance (DMARC).
+
+- PRE-SETUP:
+  ```
+  | → Verify your email address with Amazon SES
+  |   (you must verify that you own the sender's email address.)
+  |   → Create a shared credentials file.
+  |     https://docs.aws.amazon.com/ses/latest/DeveloperGuide/create-shared-credentials-file.html
+  ```
+
+- Easy integration with Spring Boot.
+  <https://attacomsian.com/blog/amazon-ses-integration-with-spring-boot/>
+[[}]]

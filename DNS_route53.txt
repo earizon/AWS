@@ -1,0 +1,110 @@
+[[{networking.dns]]
+# Route53 (AWS DNS Server)
+
+  ```
+  | route53  1<····> N hosted    1<·····> N Registry
+  | service            zone/s               Entry/ies
+  | service            └─┬───┘              └──┬───┘
+  |                      │                     ·
+  | ┌────────────────────┘                     ·
+  | domain name: example.com                   ·
+  | type: public|private| ...                  ·
+  | created by: Route 53,                      ·
+  | Record count: N                            ·
+  | Description: ...                           ·
+  | Hosted zone ID: Z3OCGYAX45K0T2             ·
+  |                                            ·
+  |  ┌·········································┘
+  |  Record            Type  Routing   Differen-  Value/Route
+  |  name                    policy    tiator     traffic to
+  |
+  |  example.com       NS    Simple    -          ns-29.awsdns-03.com.
+  |                                               ns-1868.awsdns-41.co.uk.
+  |                                               ns-675.awsdns-20.net.
+  |                                               ns-1241.awsdns-27.org.
+  |  example.com       SOA   Simple    -          ns-29.awsdns-03.com. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400
+  |  dev.example.com   A     Simple   -          3.22.33.44
+  |  pro.example.com   A     Simple   -          3.22.33.44
+  |   qa.example.com   A     Simple   -          3.22.33.44
+  |  example.com       A     Simple   -          "ELB entry"
+  |  www.example.com   A     Simple   -          "ELB entry"
+  |                                              └────┬────┘
+  |   DNS Records Types:                          ┌····┘
+  |   A       root domain name IP address,        The entry will be similar to:
+  |           Ex: mydomain.com → 1.2.3.4          dualstack.ls-adop-instance-entrypoint-1234567890.eu-west-1.elb.amazonaws.com.
+  |           Not recomended for changing IPs
+  |   CNAME   maps name2 → name1
+  |           Ex: int.domain.com → domain.com
+  |   Alias   Amazon Route 53 virtual record
+  |           to map AWS resources like ELBs,
+  |           CloudFront, S3 buckets, ...
+  |   MX      mail server name → IP address
+  |           Ex: smtp.mydomain.com → 1.2.3.4
+  |   SOA    ...
+  |   AAAA    A record for IPv6 addresses
+  |
+  |aws route53
+  | activate-key-signing-key
+  | associate-vpc-with-hosted-zone
+  |
+  | create-cidr-collection                   delete-cidr-collection
+  | create-health-check                      delete-health-check
+  | create-hosted-zone                       delete-hosted-zone
+  | create-key-signing-key                   delete-key-signing-key
+  | create-query-logging-config              delete-query-logging-config
+  | create-reusable-delegation-set           delete-reusable-delegation-set
+  | create-traffic-policy                    delete-traffic-policy
+  | create-traffic-policy-instance           delete-traffic-policy-instance
+  | create-traffic-policy-version            delete-vpc-association-authorization
+  | create-vpc-association-authorization
+  | deactivate-key-signing-key
+  |
+  | disable-hosted-zone-dnssec
+  | disassociate-vpc-from-hosted-zone
+  | enable-hosted-zone-dnssec
+  | get-account-limit                      list-cidr-blocks
+  | get-change                             list-cidr-collections
+  | get-checker-ip-ranges                  list-cidr-locations
+  | get-dnssec                             list-geo-locations
+  | get-geo-location                       list-health-checks
+  | get-health-check                       list-hosted-zones
+  | get-health-check-count                 list-hosted-zones-by-name
+  | get-health-check-last-failure-reason   list-hosted-zones-by-vpc
+  | get-health-check-status                list-query-logging-configs
+  | get-hosted-zone                        list-resource-record-sets
+  | get-hosted-zone-count                  list-reusable-delegation-sets
+  | get-hosted-zone-limit                  list-tags-for-resource
+  | get-query-logging-config               list-tags-for-resources
+  | get-reusable-delegation-set            list-traffic-policies
+  | get-reusable-delegation-set-limit      list-traffic-policy-instances
+  | get-traffic-policy                     list-traffic-policy-instances-by-hosted-zone
+  | get-traffic-policy-instance            list-traffic-policy-instances-by-policy
+  | get-traffic-policy-instance-count      list-traffic-policy-versions
+  | help                                   list-vpc-association-authorizations
+  |
+  | test-dns-answer
+  | update-health-check                    change-cidr-collection
+  | update-hosted-zone-comment             change-resource-record-sets
+  | update-traffic-policy-comment          change-tags-for-resource
+  | update-traffic-policy-instance
+  | wait
+  ```
+
+
+[[{troubleshooting.DNS]]
+* Simptom: dig mydomain.com returns no results, but the domain has been
+  properly registered.
+* Probably cause: Amazon suspended the domain. It is no active anymore.
+
+  """ ...Why was the domain suspended? ...  Beginning January 1st, 2014, 
+  ICANN requires that registrars verify, within 15 days after 
+  registration, that the registrant contact for a domain can be 
+  reached. We didn't get a response to our initial email for 
+  verification that the email address is valid. ..."
+
+* FIX:  Go to Route 53 ··> "Registered domains" and check Contact Information.
+  * Registrant Contact must be in state "Verified".
+
+
+[[troubleshooting.DNS}]]
+[[networking.dns}]]

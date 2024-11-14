@@ -1,0 +1,9 @@
+[[{arch.async.event_driven]]
+
+## Kinesis Streams ("Kafka like")
+
+* collect/process/analyze real-time, streaming data.
+  data: multimedia, app.logs, website clickstreams,
+  IoT telemetry data, training data, ...
+[[arch.async.event_driven}]]
+

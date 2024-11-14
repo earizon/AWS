@@ -1,0 +1,279 @@
+[[{PM.TODO]]
+# TODO / Non-Classified
+
+[[{]]
+## AWS Outposts vs Wavelength 
+
+* AWS Outpost (2020): local and private infraestructure and services
+  by providing a rack based solution to install in your datacenter
+  Outpost control plane and API is the same as you have in the region.
+ * <https://www.infoq.com/news/2020/01/AWS-Outposts-Hybrid/>
+    Amazon Releases AWS Outposts, Enabling Hybrid Data Center Architectures
+    """ Customers place infrastructure orders online, Amazon
+      will then ship the modular compute rack and a trained AWS technician
+      will connect, set up and validate the installation.
+    """
+
+* AWS Wavelength: similar to Outpost in many ways.
+  * local computing but in a different way and for addressing
+    different use cases.
+  * Sort of "extension of it's home region", like availability zone,
+    wavelength zone is much similar in that you don't need to physical
+    buy and place compute in your datacenter, but it's provided for
+    you on a the mobile operator, in this example, Verizon.
+  * infrastructure is shared with CSP and you have a Carrier Gateway 
+    which interfaces to the mobile network at geographical area giving
+    increased access and lower latency to the users you would serve 
+    on that network.  This is what is known as "Multi-Access Edge Compute" MEC.
+  * You need to couple a few other global AWS servers, CloudMap and Route53
+    so if your application serves out of multiple regions and wavelength zones
+  , you want the traffic to arrive at the closest wavelength zone to that user.
+[[}]]
+
+## EventBridge Schema Registry [[{arch.event_stream,01_PM.TODO]]
+- developers can store the event structure-or schema-in a shared
+  central location and map those schemas to code for Java/Python/Typescript,
+  using events as objects in their code.
+- Alternatives include Microsoft EventGrid (including advanced features like
+  filtering, retry policies, and support for CloudEvents but missing a schema
+  registry capability), Triggermesh's EveryBridge (event bus that can consume
+  events from various sources and trigger multi-cloud lambdas).
+[[}]]
+
+## Amazon S3 Event Notifications with Amazon EventBridge
+
+* <https://www.infoq.com/news/2021/12/amazon-eventbridge-s3-events>
+
+## S3 Adds New Long-Lived Data Storage Class [[{]]
+
+* <https://www.infoq.com/news/2021/12/s3-glacier-instant-retrieval/>
+  Simplifies Access Management
+
+[[}]]
+
+[[{computing.ML.gaudi]]
+## DL1 Instances (Gaudi Accelerators) 
+
+* <https://www.infoq.com/news/2021/11/amazon-habana-gaudi/>
+* The new instances include the Habana SynapseAI SDK
+* integrated with TensorFlow and PyTorch ML
+[[computing.ML.gaudi}]]
+
+
+##  Why AWS Lambda Pricing Has to Change for the Enterprise [[{]]
+
+* <https://www.infoq.com/articles/aws-lambda-price-change/>
+[[}]]
+
+## payments: [[{]]
+  Starting from 17 December 2020, we are streamlining the invoicing
+  experience for accounts invoiced by Amazon Web Services EMEA SARL
+  ("AWS Europe"). Your tax invoices will contain the information you
+  currently see in the Request for Payment (RFP), such as additional
+  purchase details for your Reserve Instance (RI) and Savings Plan (SP)
+  purchases, a summary by services, a summary by linked account, as
+  well as additional details on any discounts or credits. You will no
+  longer receive RFPs.
+[[}]]
+
+## Proton: Unified IaC+CI/CD pipeline+observability  [[{]]
+* 2021-06 general availability
+  https://www.infoq.com/news/2021/06/aws-proton-container-ga/
+  https://www.infoq.com/news/2022/01/proton-terraform-git/
+* developers can quickly go from code to production.
+* AWS Proton's self-service capabilities can be used to deploy
+  code quickly and securely without having to become experts
+  on each of the underlying services involved, while the central
+  infrastructure team can be assured that the apps deployed by
+  their developers using AWS Proton meet the standards they have
+  set for their business.
+[[}]]
+
+
+
+## Low_code, AWS Amplify: App Dev. accelerator.
+
+## Cloud Custodian: [[{governance,security,01_PM.radar]]
+<https://cloudcustodian.io/>
+<https://manheim-c7n-tools.readthedocs.io/en/latest/>
+- Opensource Cloud Security, Governance, and Management
+  The Path to a Well Managed Cloud
+
+- Cloud Custodian enables users to be well managed in the cloud. The simple YAML
+  DSL allows you to easily define rules to enable a well-managed cloud
+  infrastructure, that's both secure and cost optimized. It consolidates many of
+  the ad-hoc scripts organizations have into a lightweight and flexible tool,
+  with unified metrics and reporting.
+[[}]]
+
+* $ aws ec2 describe-key-pairs --key-name AWS_SSH_Key  <- CHECK INSTALL Example:
+
+#  Julian Wood:
+   Serverless Developer Advocate,
+   Amazon Web Services
+   https://aws.amazon.com/blogs/compute/introducing-the-aws-lambda-telemetry-api/
+
+   Introducing AWS Lambda Telemetry API.
+   easier way to receive enhanced function telemetry directly
+   from the Lambda service and send it to custom destinations.
+      It's a new API that Lambda extensions can use. It enhances the
+existing Lambda Logs API functionality, adding events and traces.
+
+   The schema is semantically compatible with OpenTelemetry (OTEL).
+You can use events received from the Telemetry API to build and
+report OTEL spans!
+
+Today at launch you can use Telemetry API-enabled extensions to send
+telemetry data to Coralogix, Datadog, Dynatrace, Lumigo, New Relic,
+Inc., Sumo Logic, Sedai, Sysdig, Site24x7, Serverless Inc. Thundra,
+or your own custom destinations.
+
+-------------------------------------------------------------------
+AWS Publishes Reference Architecture and Implementations for Deployment Pipelines
+https://www.infoq.com/news/2023/02/aws-deployment-pipelines/?itm_source=infoq
+________________________________
+Aws: Infrastructure as SQL on AWS: IaSQL Enters Beta Adding Multi-Region and Transactions
+https://www.infoq.com/news/2023/03/iasql-aws-beta/?itm_source=infoq
+________________________________
+AWS: Amazon EC2 Introduces Replace Root Volume to Patch Guest Operating System and Applications
+https://www.infoq.com/news/2022/11/ec2-replace-root-volume/
+________________________________
+Health Arch: AWS Announces the General Availability of Amazon Omics
+https://www.infoq.com/news/2022/12/aws-amazon-omics-ga/?itm_source=infoq&itm_medium=popular_widget&itm_campaign=popular_content_list&itm_content=
+________________________________
+AWS Security
+Amazon Security Finding Format
+https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-findings-format.html
+https://github.com/PoeBlu/ASFF
+________________________________
+Cloud,  AWS: Security Reference Architecture, taxonomy
+https://docs.aws.amazon.com/prescriptive-guidance/latest/security-reference-architecture/architecture.html
+________________________________
+Cloud, Azure: Microsoft Enhances Azure Learning with Learn Rooms
+https://www.infoq.com/news/2023/04/microsoft-azure-learn-rooms/?itm_source=infoq&itm_medium=popular_widget&itm_campaign=popular_content_list&itm_content=
+
+Microsoft’s competitors in the cloud space, AWS, and Google, have similar learning offerings. AWS provides anyone interested in learning their platform with AWS Training, while Google offers Cloud Skill Boost.
+________________________________
+aws, encryption
+https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html
+----------------------------------
+# IAM policy example
+{
+    "Id": "key-consolepolicy-3",
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Enable IAM User Permissions",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::123456789012:root"
+            },
+            "Action": "kms:*",
+            "Resource": "*"
+        },
+        {
+            "Sid": "Allow access for Key Administrators",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::123456789012:user/user01"
+            },
+            "Action": [
+                "kms:Create*",
+                "kms:Describe*",
+                "kms:Enable*",
+                "kms:List*",
+                "kms:Put*",
+                "kms:Update*",
+                "kms:Revoke*",
+                "kms:Disable*",
+                "kms:Get*",
+                "kms:Delete*",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+
+## Directory Serv.  [[{]]
+*  "LDAP" and Active Directory User management.
+[[}]]
+
+## Autoscaling EC2/ECS-Task/...  [[{escalability.101,01_PM.TODO]]
+<https://www.infoq.com/news/2020/08/aws-chaos-engineering/>
+* Varun Jewalikar, Software Engineer at Prime Video, and Adrian
+  Hornsby, Principal Developer Advocate (Architecture) at AWS, write
+  that typical chaos engineering experiments include simulating
+  resource exhaustion and a failed or slow network. There are
+  countermeasures for such scenarios but "they are rarely adequately
+  tested, as unit or integration tests generally can't validate them
+  with high confidence".
+
+* AWS Systems Manager is a tool that can perform various operational
+  tasks across AWS resources with an agent component called SSM Agent.
+  The agent - pre-installed by default on certain Windows and Linux
+  AMIs - has the concept of "Documents" which are similar to runbooks
+  that can be executed. It can run simple shell scripts too, a feature
+  leveraged by the AWSSSMChaosRunner. The SendCommand API in SSM
+  enables running commands across multiple instances, which can be
+  filtered by AWS tags. CloudWatch can be used to view logs from all
+  the instances in a single place.
+[[}]]
+
+
+##  System Manager: [[{]]
+  <https://blogs.sequoiainc.com/raspberry-pi-remote-management-with-aws-ec2-systems-manager/>
+* Remote Management agent based platform for configuring, controlling,
+  and governing on premise servers from within the EC2 console.
+  How-To:
+* install Systems Manager agent on on-premises server, then
+  execute commands remotely, ensure servers remain in specific state,
+  and enforce configuration management requirements.
+[[}]]
+
+##  JDK JAVA + maven:
+   https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-project-maven.html#configuring-maven-individual-components
+
+##  HashiCorp Terraform AWS Provider Introduces Significant Changes to Amazon S3 Bucket Resource
+    https://www.infoq.com/news/2022/02/terraform-aws-provider-s3/
+##  Pulumi Announces AWS Native Provider
+    https://www.infoq.com/news/2021/11/pulumi-aws-native-provider/
+##  (storage) How to Install MinIO Object Storage Server on Debian 11
+    https://www.howtoforge.com/how-to-install-minio-storage-server-on-debian-11/
+
+
+## Stay connected with AWS by creating a profile:
+
+*  https://pages.awscloud.com/IAM-communication-preferences.html
+
+##  How to reduce the AWS costs?  
+https://www.reddit.com/r/aws/comments/1cdkmt5/how_to_reduce_the_aws_costs/
+
+## AWS Terraform Example
+
+* <https://github.com/falcosecurity/falco-aws-terraform>
+
+  Configures next setup:
+  ```
+  |CloudTrail|>|S3|>|SNS|>|SQS|>|CloudTrail Falco Plugin| -> |Falco|
+  
+  $ cd examples/single-account
+  $ terraform init
+  $ terraform validate
+  $ terraform apply
+  ```
+
+
+# AWS AppSync serverless GraphQL,Pub/Sub APIs [[{PM.low_code]]
+* Quickly build endpoints to securely update, query or publish data.
+[[}]]
+
+[[{PM.low_code]]
+# AWS Amplify Studio
+* <https://www.infoq.com/news/2021/12/aws-amplify-studio-preview/>
+[[}]]
+
+[[PM.TODO}]]

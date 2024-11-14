@@ -1,0 +1,50 @@
+# Storage Services
+
+[[{storage.101]]
+## Storage Matrix
+* <https://aws.amazon.com/products/storage/>
+* Elastic Block Store(EBS)          
+  Persistent local storage for:     
+  - EC2                             
+  - DDBBs                           
+  - data warehousing                
+  - enterprise applications         
+  - Big Data processing
+  - Backup/recovery.
+
+* Simple Storage Service ("S3")
+  - scalable, durable platform to make data
+    accessible from Internet for
+    user-generated content, active archive,
+    serverless computing, Big Data storage
+    backup and recovery
+
+* FSx for Lustre: Fully managed FS optimized for compute-intensive workloads(IA,
+  media data processing, ...) seamlessly integrated with S3
+
+* S3 Glacier/Glacier Deep-Archive      
+ - Highly affordable long-term storage 
+   classes that can replace tape for   
+   archive and regulatory compliance   
+
+* AWS Storage Gateway:
+  hybrid storage cloud augmenting *on-premises* environment
+   for bursting, tiering or migration.
+
+* Cloud Data Migration Services        
+  - services portfolio to help simplify
+    moving data of all types and sizes 
+    into and out of the AWS cloud      
+                                       
+* AWS Backup
+  - fully managed backup service that
+    makes it easy to centralize and automate
+    the back up of data across AWS services
+      in cloud/Storage-gateway
+[[storage.101}]]
+
+
+## Glacier, "Backup" storage [[{]]
+[[}]]
+
+
