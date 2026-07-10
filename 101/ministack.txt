@@ -1,0 +1,61 @@
+# Minstack: AWS emulator
+
+(Summary from <https://ministack.org/getting-started>)
+
+- 60+ AWS services.
+- multi-account 
+- multi-region 
+- on a single port
+- With real Postgres, Redis, and Docker containers.
+- No account, no license key, no telemetry.
+- Works with any AWS tool — no config changes
+
+
+  ```
+  |  $ docker run -p 4566:4566 ministackorg/ministack
+  | 
+  |  $ editor ~/.aws/config   # change default AWS endpoint
+  |  + ignore_configure_endpoint_urls = true
+  |  + endpoint_url = http://localhost:4566   
+  |  
+  |  # export AWS_ACCESS_KEY_ID='test',
+  |  # export AWS_SECRET_ACCESS_KEY='test'
+  | 
+  |  $ aws --endpoint-url=http://localhost:4566 s3 mb s3://my-bucket  
+  |  > make_bucket: my-bucket
+  | 
+  |  $ aws --endpoint-url=http://localhost:4566 rds create-db-instance \
+  |  --db-instance-identifier mydb --engine postgres \
+  |  --master-username admin --master-user-password secret                # Create Real database (RDS spins up Postgres)
+  |  > ✓ Real Postgres container running on localhost:15432
+  | 
+  |  $ aws --endpoint-url=http://localhost:4566 elasticache \
+  |  create-cache-cluster --cache-cluster-id my-redis --engine redis      # Real Redis via ElastiCache
+  |  > ✓ Real Redis container running on localhost:16379
+  ```
+
+
+  ```
+  | Terraform
+  | 🌍 
+  | $ editor main.tf           # create blueprint file
+  | + provider "aws" {
+  | +   region = "us-east-1"
+  | +   access_key = "test"
+  | +   secret_key = "test"
+  | +   s3_use_path_style = true
+  | +   skip_credentials_validation = true
+  | +   skip_metadata_api_check = true
+  | +   skip_requesting_account_id = true
+  | + 
+  | +   # Point the services to your fake cloud
+  | +   endpoints {
+  | +     s3 = "http://localhost:4566"
+  | +     dynamodb = "http://localhost:4566"
+  | +     sqs = "http://localhost:4566"
+  | +     lambda = "http://localhost:4566"
+  | +   }
+  | + }
+  | 
+  | $ terraform apply          # It will create everything safely on local machine!
+  ```

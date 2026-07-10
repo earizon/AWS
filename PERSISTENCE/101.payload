@@ -1,0 +1,9 @@
+# Persistence
+aws_dynamodb.txt
+aws_RDS.txt
+aws_redshift.txt
+storage_EBS.txt
+storage_EFS.txt
+storage_S3.txt
+storage_snowball.txt
+storage.txt

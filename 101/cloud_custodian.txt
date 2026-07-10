@@ -1,0 +1,79 @@
+[[{101,governance,security,qa.best_patterns]]
+## Cloud Custodian: Multi-Cloud: Security, Governance, and Management
+
+- License: Open Source, (CNCF Incubating Project under the Apache 2.0 license)
+
+- <https://cloudcustodian.io/>
+- <https://manheim-c7n-tools.readthedocs.io/en/latest/>
+
+
+- Cloud Custodian enables users to be well managed in the cloud. 
+  The simple YAML DSL allows you to easily define rules to enable a 
+  well-managed cloud infrastructure, that's both secure and cost optimized.
+
+-  It consolidates many of the ad-hoc scripts organizations have into a
+   lightweight and flexible tool, with unified metrics and reporting.
+
+- supports AWS, Azure, and GCP 
+- Kubernetes, Tencent Cloud, and OpenStack support in beta.
+
+- Real-time Compliance: actively enforce security policies by natively integrating
+  with the cloud provider's control plane and remediating in real-time.
+
+- Cost Management:
+  - Setup off-hours to save money by turning off resources when 
+    they're not being used. Garbage collect unused resources by looking 
+    into utilization metrics. Easily tag and reap unused resources.
+
+- Off Hours: 
+  - Integrate Custodian with Terraform to ensure your infrastructure 
+    comes up compliant right from the start, all defined in git for true 
+    "Governance as Code" benefits. This feature is currently in Alpha.
+
+- Simple DSL to build complex workflows or millions of policies. [[PM.low_code,security.101]]
+  (<https://cloudcustodian.io/docs/aws/examples/index.html>)
+  - Account: Login From Invalid IP Address
+  - Account: Detect Root Logins
+  - Account: Service Limit
+  - AMI    : Stop EC2 using Unapproved AMIs
+  - AutoScalingGroup: Verify ASGs have valid configurations
+  - AMI    : ASG Garbage Collector
+  - ASG    : Offhours Support
+  - Block New Resources In Non Standard Regions
+  - DMS    : DB Migration Service Endpoint - Enforce SSL
+  - EBS    : Garbage Collect Unattached Volumes
+  - EBS    : Create and Manage Snapshots
+  - EBS    : Delete Unencrypted
+  - EC2    : auto-tag aws userName on resources    [[computing.ec2]]
+  - EC2    : Modify Instance Metadata Options
+  - EC2    : Offhours Support
+  - EC2    : Old Instance Report
+  - EC2    : Power On For Scheduled Patching
+  - EC2    : Terminate Unpatchable Instances
+  - EFS    : Policy Statements with has-statement and PartialMatch
+  - EIP    : Garbage Collect Unattached Elastic IPs
+  - ELB    : Delete New Internet-Facing ELBs
+  - ELB    : Delete Unused Elastic Load Balancers
+  - ELB    : SSL Blacklist
+  - ELB    : SSL Whitelist
+  - Filtering FSx based on CloudWatch metrics
+  - IAM    : Manage Access Keys
+  - IAM    : Manage Whether A Specific IAM Policy is Attached to Roles
+  - Lambda : Notify On Lambda Errors
+  - Example offhours policy
+  - RDS    : Delete Unused Databases With No Connections
+  - RDS    : Terminate Unencrypted Public Instances
+  - S3     : Configure New Buckets Settings and Standards
+  - S3     : Block Public S3 Object ACLs
+  - S3     : Encryption
+  - S3     : Global Grants
+  - S3     : Add lifecycle policy on bucket delete
+  - SageMaker Notebook: Delete Public or Unencrypted
+  - Savings Plans  [[PM.price]]
+  - Sec.Groups: add permission
+  - Sec.Groups: Detect and Remediate Violations
+  - Tag Compliance Across Resources (EC2, ASG, ELB, S3, etc)
+  - VPC    : Flow Log Configuration Check
+  - VPC    : Notify On Invalid External Peering Connections
+
+[[}]]

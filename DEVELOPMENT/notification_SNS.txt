@@ -1,0 +1,177 @@
+[[{notification.SNS,QA.UX.notification,arch.event_stream,arch.async/reactive]]
+# Simple Notification Service (SNS)
+
+  ```
+  | Simple Notification Service  [[{doc_has.diagram}]]
+  |
+  | │Publisher│               │ SNS │              │Subscriber│ 
+  | │Producer │ → (push to) → │topic│ → (push to) →│Consumer  │
+  |               └───┬───┘                         
+  |          push can be made                     (Android, Apple,
+  |          through SQS, HTTP/S,                  Win, Lambda,...)
+  |          email, SMS, labmdas 
+  ```
+
+* Uses cases:
+  - monitoring apps.
+  - workflow systems.
+  - time-sensitive info update
+  - mobile apps.
+  - ...
+
+# Uses cases: monitoring aps, workflow systems, time-sensitive info update, mobile apps., ...
+
+ ```
+ │Publisher│            │ SNS │           │Subscriber│
+ │Producer │ → (push  → │topic│ → [push] →│Consumer  │
+                SNS msg)                    ^    
+           · push can be made                 · Android
+             through SQS, HTTP/S,             · Apple
+             email, SMS, labmdas              · Windows
+                                            · Fire OS
+                                            · AWS Lambda (called asynchronously)
+                                            · ...
+     SNS message event
+     {
+     "Records": [
+       {
+         "EventVersion": "1.0",
+         "EventSubscriptionArn": 
+           "arn:aws:sns:us-east-2:123456789012:sns-lambda:$UUID",
+         "EventSource": "aws:sns",
+         "Sns": {
+           "SignatureVersion": "1",
+           "Timestamp": "2019-01-02T12:45:07.000Z",
+           "Signature": (string base64 encoded),
+           "SigningCertUrl": "https://sns.us-east-2.amazonaws.com/SimpleNotificationService-....pem",
+           "MessageId": "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
+           "Type": "Notification",
+           "UnsubscribeUrl": "https://sns.us-east-2.amazonaws.com/?Action=Unsubscribe&amp;SubscriptionArn=arn:aws:sns:us-east-2:123456789012:test-lambda:$UUID",
+           "TopicArn":"arn:aws:sns:us-east-2:123456789012:sns-lambda",
+
+           "Subject": "TestInvoke"                                       ← Subject
+           "Message": "Hello from SNS!",                                 ← Message
+           "MessageAttributes": {                                        ← typed key-value attributes.
+             "Test"      : { "Type": "String", "Value": "TestString" },
+             "TestBinary": { "Type": "Binary", "Value": "TestBinary" }
+           },
+
+         }
+       }
+     ]
+     }
+ ```
+
+## SNS to Lambda notification
+ 
+* KEY POINT: For asynch invocation, Lambda queues the message and handles retries. 
+  If Amazon SNS can't reach Lambda or the message is rejected, Amazon SNS retries
+  at increasing intervals over several hours. 
+
+# PRE-SETUP)
+
+  ```
+  $ aws sns create-topic --name topic01 --profile accountA  
+  (write down the created ARN for the new topic)
+  ```
+
+* REF:
+  https://docs.aws.amazon.com/en_us/sdk-for-javascript/v2/developer-guide/sns-examples-publishing-messages.html
+  https://docs.aws.amazon.com/en_us/lambda/latest/dg/with-sns-example.html
+  ```
+  | var AWS = require('aws-sdk');
+  | AWS.config.update({region: 'REGION'});
+  | var publishParams = { 
+  |   Message: 'MESSAGE_TEXT', /* required */
+  |   TopicArn: 'TOPIC_ARN'
+  | };
+  | const data = await ( new AWS.SNS({apiVersion: '2010-03-31'}) ).publish(publishParams);
+  ```
+
+  ```
+  | $ cat index.js (async Lambda receiving SNS messages) 
+  | console.log('Loading function');
+  |
+  | exports.handler = function(event, context, callback) { // <·· Note: Callback use for async lambdas
+  |     var message = event.Records[0].Sns.Message
+  |     ...
+  |     callback(null, "Success")
+  | }
+  ```
+
+  ```
+  | $ zip function.zip index.js
+  | $ aws lambda create-function --function-name MySNSLambda        \
+  |   --zip-file fileb://function.zip --handler index.handler --runtime nodejs12.x \
+  |   --role arn:aws:iam::$ACT_ID:role/service-role/lambda-sns-execution-role  \
+  |   --timeout 60 --profile accountB
+  ```
+
+## Permissions setup: (for SNS @ Account A and Lambda @ Account B)
+
+1. Authorize SNS topic to invoke to Lambda func.
+   ```
+   | $ aws --profile accountB lambda add-permission
+   |       --function-name MySNSLambda \
+   |       --source-arn arn:aws:sns:$AWS_ZONE_A:$ACC__A:sns-topic-for-lambda \
+   |       --statement-id MySNSLambda   --action "lambda:InvokeFunction" \
+   |       --principal sns.amazonaws.com
+   ```
+
+2. Authorize Labmda (Principal) to subscribe to → SNS topic
+   ```
+   | $  aws --profile accountA
+   | $      --label lambda-access
+   | $    sns add-permission
+   | $      --aws-account-id $ACCT_ID_B  \
+   | $      --topic-arn arn:aws:sns:$AWS_ZONE_A:$AWS_ID_A:sns-topic-for-lambda \
+   | $      --action-name Subscribe ListSubscriptionsByTopic
+   | (Ouput like ...)
+   | {
+   |   Statement: {
+   |   Condition:{
+   |     ArnLike :{ AWS:"SourceArn: arn:aws:sns:us-east-2:$AWS_ID_A:sns-topic-for-lambda"}
+   |   },
+   |   Action    : ["lambda:InvokeFunction"],
+   |   Resource  : "arn:aws:lambda:us-east-2:$AWS_ID_B:function:MySNSLambda",
+   |   Effect    : "Allow",
+   |   Principal :{"Service":"sns.amazonaws.com"},
+   |   Sid":"MySNSLambda1"}"
+   | }
+   ```
+
+* **WARN**: Do not use the --source-account parameter to add a source account to 
+  the Lambda policy when adding the policy. Source account is not 
+  supported for Amazon SNS event sources and will result in access 
+  being denied.
+
+* NOTE: If the account with the SNS topic is hosted in an opt-in region, you 
+  need to specify the region in the principal. For an example, see 
+  Invoking Lambda functions using Amazon SNS notifications in the 
+  Amazon Simple Notification Service Developer Guide.
+
+3. SUBSCRIBE LAMBDA@ACCT_B TO SNS TOPIC:
+
+  ```
+  | $ aws --profile accountB sns subscribe --protocol lambda \
+  |   --topic-arn arn:aws:sns:$AWS_ZONE_A:$ACC__A:sns-topic-for-lambda \
+  |   --notification-endpoint arn:aws:lambda:$AWS_ZONE_B:$ACC__B:function:Function-With-SNS
+  |  (output will be similar to ...)
+  |  { "SubscriptionArn": "arn:aws:sns:us-east-2:...:sns-topic-for-lambda:$UUID " }
+  ```
+
+4. Test subscription (from ACCT_A)
+   Type Hello World into a text file and save it as message.txt. Then run the following command:
+
+  ```
+  | $ aws --profile accountA \
+  |   sns publish \
+  |   --message file://message.txt \
+  |   --subject Test \
+  |   --topic-arn arn:aws:sns:us-east-2:ACCT_A:sns-topic-for-lambda
+  |   
+  | (command will return message (Unique) ID  indicating the message has been
+  |  accepted by SNS service. Amazon SNS will then attempt to deliver
+  |  it to the topic's subscribers)
+  ```
+[[notification.SNS}]]

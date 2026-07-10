@@ -1,0 +1,20 @@
+## Elastic File system (EFS) [[{storage.EFS,PM.TODO]]
+Fully managed NFS for *Linux workloads* (Cloud|on-premises)
+- Scales on demand *TO PETABYTES* without disrupting apps with Strong FS consistency across 3 AZ [[scalability]]
+- Automatically shrinks when removing files.
+
+- EFS Infrequent Access (IA) storage class: reduce costs by
+  setting up life cycle mng. policies to move files that 
+  haven’t been accessed for a certain amount of days to the
+  cheaper EFS IA storage tier.  [[PM.PRICE]]
+
+## IAM authorization for EFS
+* 2020-07+
+* Identify clients and use IAM policies to manage permissions.
+* AWS CloudTrail console logs an appropriate event, making
+  the process auditable.
+• EFS Access Points: Enforce use of OS user and group, optionally
+  restricting access to a directory in the FS.
+
+
+[[storage.EFS}]]

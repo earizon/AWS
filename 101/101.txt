@@ -1,0 +1,161 @@
+[[{101]]
+# AWS 101
+
+
+[[{]]
+##  OnPremise vs AWS 
+
+* <https://www.wowslides.com/users/bahadirhalil/projects/AWS-Core-Services-1>
+  ```
+  |                  INFRASTRUCTURE 
+  |  
+  |           TRADITIONAL           vs  AWS
+  | ┌────────────────────────────────┬────────────┐
+  | │                      Firewalls │ Security-  │
+  | │                                │   Groups   │
+  | ├────────────────────────────────┼────────────┤
+  | │                           ACLs │ Network    │
+  | │                                │ -ACLs      │
+  | ├────────────────────────────────┼────────────┤
+  | │          Admins, Users, Groups │ AWS IAM    │
+  | ├────────────────────────────────┼────────────┤
+  | │                         Router │ ELB, VPC   │
+  | │               Network Pipeline │            │
+  | │                         Switch │            │
+  | ├────────────────────────────────┼────────────┤
+  | │            On-Premises Servers │ EC2        │
+  | │                                │ -Instances │
+  | ├────────────────────────────────┼────────────┤
+  | │   Direct Attached Storage, DAS │ EBS, Elastic Block System  
+  | │      Storage Area Network, SAN │ EFS, Elastic File  System  
+  | │  Network Attached Storage, NAS │ S3 ,       │
+  | │                          RDBMS │ RDS        │
+  | └────────────────────────────────┴────────────┘
+  ```
+[[}]]
+
+
+[[{]]
+  ```
+  | MAIN AWS Services  (Summarized from Ministack @ 2026─07) ──────────────────────────────────────────────────────
+  | ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  | IAM          : roles, policies, groups, instance profiles, OIDC
+  | STS          : CallerIdentity, AssumeRole, GetSessionToken
+  | Organizations: DescribeOrganization, ListRoots, accounts, OUs with the new Path field
+  | Account      : GetAccountInformation (with AccountState), GetContactInformation, ListRegions opt-in matrix
+  | Cost & Usage Reports: CUR report definitions (stub) — control plane only, no real billing data emitted
+  | Resource Groups Tagging: GetResources, GetTagKeys/Values, TagResources across S3, Lambda, SQS, SNS, DDB,
+  |                KMS, ECR, ECS, EFS, AppSync, scheduler, more
+  | Inspector2   : 14 ops — Enable, Disable, ListFindings with filtering/sorting/pagination, coverage and 
+  |                aggregation queries, filter and tag CRUD; deterministic stub vulnerability findings for 
+  |                ECR images, Lambda functions, and EC2 instances
+  | Cognito      : User pools (Independent of IAM, just for final apps/users), auth flows, TOTP MFA, 
+  |                identity pools, federated credentials .
+  | Backup       : Vaults, plans, recovery points, tags — control plane stub
+  | CloudWatch Logs: Groups, streams, retention, subscription filters, metric filters, Insights
+  | CloudTrail   : Trail CRUD (stub) — sufficient for IaC stacks that declare trails alongside other resources
+  | 
+  | AI: 
+  | Bedrock      : Control plane (66 ops), runtime (Converse / InvokeModel with real eventstream), agents (72 ops),
+  |                agent runtime (31 ops); proxy to Ollama / llama.cpp / vLLM for real completions
+  |
+  | S3 Buckets   : objects, versioning, encryption, lifecycle, CORS, Object Lock, replication
+  | S3 Files     : File systems, mount targets, access points, policies — new April 2026 S3 service
+  | S3 Tables    : Table buckets, namespaces, Iceberg-format tables; 
+  |                control plane covers Create/List/Get/Delete for buckets, namespaces, and tables plus GetTableMetadataLocation / 
+  |                UpdateTableMetadataLocation; embedded Iceberg REST catalog at 
+  |                /iceberg so Spark jobs commit Iceberg tables without an external 
+  |                catalog
+  |
+  | SQS Queues   : FIFO, DLQ, batch, visibility
+  | SNS Topics   : subscriptions, fanout to SQS, batch publish
+  | DynamoDB Tables: CRUD, query, scan, transactions, TTL, GSI
+  | Lambda       : warm workers, SQS event source mapping, Layers
+  | Secrets Manager: CRUD, versioning, rotation, resource policies
+  | SSM Params   :  String, SecureString, paths, labels, tags
+  | EventBridge  : Buses, rules, targets, Lambda dispatch, archives, permissions
+  | EventBridge Scheduler: Schedules, schedule groups, rate/cron expressions, target dispatch
+  | EventBridge Pipes: Pipe CRUD with source → enrichment → target wiring (SQS, Kinesis, DDB Streams sources; Lambda, SQS, SFN targets)
+  | Kinesis      : Streams, split/merge shards, consumers, encryption, monitoring
+  | CW Metrics   : Metrics, alarms, composite alarms, dashboards, alarm history
+  | SES          : Send email/raw/templated, identities, configuration sets
+  | Step Functions: Full ASL engine, sync execution, task tokens, all state types
+  | API Gateway v2: HTTP APIs, Lambda proxy, path params, execute-api data plane
+  | API Gateway v1: REST APIs, resources, methods, integrations, stages, MOCK, Lambda proxy format 1.0
+  | RDS          : Real Postgres/MySQL containers
+  | ElastiCache  : Real Redis/Memcached containers, users, user groups
+  | ECS          : RunTask starts real containers, capacity providers
+  | Glue         : Catalog, crawlers, jobs, triggers, workflows
+  | Athena       : Real SQL via DuckDB (optional), data catalogs, prepared statements
+  | Firehose     : Delivery streams, PutRecord/PutRecordBatch, S3 delivery, encryption, tags
+  | Route53      : Hosted zones, record sets (CREATE/UPSERT/DELETE), health checks, tags, alias records
+  | EC2          : Instances, VPCs, subnets, security groups, route tables, ENIs, elastic IPs, NAT gateways, NACLs, flow logs, VPC peering, DHCP options, egress-only IGWs
+  | EMR          : Clusters, steps, instance groups/fleets, bootstrap actions, tags — Pro-only on LocalStack
+  | EBS          : Volumes, snapshots, attach/detach, modify, copy — Pro-only on LocalStack
+  | EFS          : File systems, mount targets, access points, lifecycle, backup policy — Pro-only on LocalStack
+  | ALB / ELBv2  : Load balancers, target groups, listeners, rules, Lambda targets + live data-plane routing — Pro-only on LocalStack
+  | ACM          : Request, import, describe certificates; DNS validation records; SANs; tags
+  | SES v2       : SendEmail, identities, configuration sets, account suppression — REST API
+  | WAF v2       : WebACLs, IP sets, rule groups, resource associations, LockToken enforcement — Pro-only on LocalStack
+  | CloudFormation: Stack lifecycle, change sets, 68 resource types, YAML/JSON templates, intrinsic functions, rollback, cross-stack exports
+  | KMS          : RSA & symmetric envelope encryption for internal cryptographic signatures
+  | ECR          : In-memory container registry providing Docker V2 manifests and full lifecycle rules
+  | AppSync      : Serverless GraphQL architecture mocking local DataSources and complex Resolvers
+  | CloudFront   : High-throughput edge location edge server emulation targeting origins natively
+  | AutoScaling  : ASGs, launch configs, scaling policies, lifecycle hooks, scheduled actions, tags
+  | CodeBuild    : Projects, builds, start/stop, batch operations, metadata stored in-memory
+  | Cloud Map    : HTTP/DNS namespaces, services, instance registration, discovery, Route53 integration
+  | RDS Data API : ExecuteStatement, BatchExecute, transactions — routes SQL to real RDS containers
+  | OpenSearch   : Domains, versions, change progress, tags — optional real opensearchproject/opensearch cluster + Dashboards sidecar via OPENSEARCH_DATAPLANE=1
+  | Batch        : Compute environments, job queues, job definitions (auto-revisioning), SubmitJob — Pro-only on LocalStack
+  | WAF Classic  : v1 + Regional stub for legacy Terraform / CFN — empty List*, valid GetChangeToken, WAFNonexistentItemException
+  | IMDS         : EC2 Instance Metadata Service v1 + v2 — SDK credential chains resolve via AWS_EC2_METADATA_SERVICE_ENDPOINT
+  | AppConfig    : Applications, environments, profiles, deployments, hosted versions, configuration sessions data plane
+  | Transfer     : SFTP servers, users, public-key auth, tags
+  | EKS          : Clusters, node groups, Fargate profiles, addons — Pro-only on LocalStack
+  | MWAA         : Managed Workflows for Apache Airflow — real apache/airflow:<version> containers (2.x and 3.x), DAG sync from S3, InvokeRestApi proxy
+  | IoT Core     : Things / certificates / policies, MQTT 3.1.1 over WebSocket on the gateway port, HTTP iot-data Publish, Local CA, persistent sessions + QoS 1 + LWT
+  | REST + MQTT/WS
+  | AppSync Events: Realtime WebSocket + HTTP publish on /event, aws-appsync-event-ws subprotocol, connection-scoped authorization, strict mode via APPSYNC_EVENTS_ENFORCE_AUTH=1
+  | CloudFront KeyValueStore: Create / Describe / Delete stores, key CRUD via the cloudfront-keyvaluestore data plane (/key-value-stores/)
+  | DynamoDB Streams: Stream records emitted by DynamoDB writes; GetShardIterator / GetRecords honoring StreamViewType
+  | MSK          : Kafka control plane — clusters, configurations, SCRAM, tags; GetBootstrapBrokers routes to a real broker you bring
+  ```
+[[}]]
+
+[[{troubleshooting.101,PM.WiP]]
+## Troubleshooting basics
+
+1. Check we are using the correct AWS REGION!!!!<br/>
+  WARN: Sometimes the Web Console switch to the global region (IAM, ...) and then
+  if fails to go back to our working region displaying no resources.
+
+2. Check Data-center status for our regions
+  <https://status.aws.amazon.com/govcloud>
+
+3. Check all AWS resources in account:
+   3.1. Go to Tag Editor: <https://console.aws.amazon.com/resource-groups/tag-editor/find-resources>
+   3.2. Set "Regions" to "All Regions"
+   3.3. Set "Resource Types" to "All supported resource types" 
+   3.4. Click "Search Resources".
+
+4. Check DISK USSAGE for EC2/ECS/K8s/... instances:<br/>
+   It could be possible that some process is writting "too many logs".
+
+[[troubleshooting.101}]]
+
+[[{101.localstack]]
+# LocalStack: 
+<https://github.com/localstack/localstack>
+* fully functional local AWS cloud stack.
+* Develop and test your cloud & Serverless apps offline
+[[101.localstack}]]
+
+[[{PM.AWS_PlantUML]]
+# AWS-PlantUML
+
+* templates, macros, stereotypes, ... for AWS components.
+  <https://github.com/milo-minderbinder/AWS-PlantUML>
+[[PM.AWS_PlantUML}]]
+
+[[101}]]

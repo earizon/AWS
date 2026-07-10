@@ -1,0 +1,12 @@
+[[{]]
+## AWS Nomenclature 
+
+- HIGH_AVAILABILITY: Service is respondent maybe in degraded mode                          [[qa.ha]]
+- FAULT-TOLERANT   : high_availability + compliant SLA
+- AVAILABILITY ZONE: (AZ) Equivalent to a "local network". If two instances
+   are in the same AZ, they can just put the MAC address of the target
+   computer on it, and then the packet will get to the right place.
+   It doesn't matter what IP address is on the packet!
+- AWS REGION       : (Multi) Data center in some World geographical place with 2 or more
+                     availabilities zones.
+[[}]]

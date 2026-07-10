@@ -1,0 +1,8 @@
+IAM.txt             # OK?
+IAM_cloudtrail.txt  # ???
+STS.txt             # ???
+guard_duty.txt      # ???
+cognito.txt         # ???
+KMS.txt             # ???
+secret_manager.txt  # ???
+AWS_Inspector.txt   # TODO

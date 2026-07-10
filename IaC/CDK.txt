@@ -1,0 +1,34 @@
+[[{IaC.CDK]]
+##  AWS CDK (Infra as Code)
+
+- deprecates CloudFormation [[IaC.CloudFormation,PM.RISK.deprecation]].<br/>
+  **10 lines AWS-CDK produces a 500 lines CloudFormation config file**.
+  <https://docs.aws.amazon.com/cdk/latest/guide/home.html> [[PM.low_code,doc_has.comparative]]
+
+- Cloud Development Kit (CDK) for Terraform:
+  By AWS, HashiCorp, and Terrastack
+  - <https://www.infoq.com/news/2020/07/cdk-terraform/>
+
+  ```
+  |Python    |
+  |Typescript| -> (input) -> CDKTF -> |terraform json| -> terraform apply
+  |...       | 
+  ```
+- CDKTF also supports to deploy resources to AWS, Azure, Google Cloud. [[cloud.Azure,cloud.GCP]]
+
+- Links:
+  - Home   <https://aws.amazon.com/cdk/>
+  - Doc    <https://docs.aws.amazon.com/cdk/latest/guide/home.html>
+  - GitHub <https://github.com/aws/aws-cdk>
+  - Gitter <https://gitter.im/awslabs/aws-cdk>
+  - StackO <https://stackoverflow.com/questions/tagged/aws-cdk>
+
+- JAVA API Ref:
+  - <https://docs.aws.amazon.com/cdk/api/latest/java/index.html>
+
+- TypeScript and Python:
+  <https://aws.amazon.com/blogs/aws/aws-cloud-development-kit-cdk-typescript-and-python-are-now-generally-available/>
+
+- Alternatives includ Terraform, Sceptre, ...
+  - <https://www.reddit.com/r/aws/comments/bfh7mj/how_to_be_more_productive_with_cloudformation/>
+[[}]]
