@@ -1,4 +1,5 @@
 # Persistence
+../apropos.txt
 aws_dynamodb.txt
 aws_RDS.txt
 aws_redshift.txt

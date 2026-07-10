@@ -68,16 +68,15 @@
   If Amazon SNS can't reach Lambda or the message is rejected, Amazon SNS retries
   at increasing intervals over several hours. 
 
-# PRE-SETUP)
-
   ```
-  $ aws sns create-topic --name topic01 --profile accountA  
-  (write down the created ARN for the new topic)
+  | # PRE-SETUP)
+  | $ aws sns create-topic --name topic01 --profile accountA  
+  | (write down the created ARN for the new topic)
   ```
 
-* REF:
-  https://docs.aws.amazon.com/en_us/sdk-for-javascript/v2/developer-guide/sns-examples-publishing-messages.html
-  https://docs.aws.amazon.com/en_us/lambda/latest/dg/with-sns-example.html
+  REF:
+  - <https://docs.aws.amazon.com/en_us/sdk-for-javascript/v2/developer-guide/sns-examples-publishing-messages.html>
+  - <https://docs.aws.amazon.com/en_us/lambda/latest/dg/with-sns-example.html>
   ```
   | var AWS = require('aws-sdk');
   | AWS.config.update({region: 'REGION'});

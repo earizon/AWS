@@ -1,4 +1,5 @@
-# Minstack: AWS emulator
+[[{101,cloud.local]]
+# Minstack: Local AWS emulator
 
 (Summary from <https://ministack.org/getting-started>)
 
@@ -26,18 +27,17 @@
   | 
   |  $ aws --endpoint-url=http://localhost:4566 rds create-db-instance \
   |  --db-instance-identifier mydb --engine postgres \
-  |  --master-username admin --master-user-password secret                # Create Real database (RDS spins up Postgres)
+  |  --master-username admin --master-user-password secret           # Create Real database (RDS spins up Postgres)
   |  > ✓ Real Postgres container running on localhost:15432
   | 
   |  $ aws --endpoint-url=http://localhost:4566 elasticache \
-  |  create-cache-cluster --cache-cluster-id my-redis --engine redis      # Real Redis via ElastiCache
+  |  create-cache-cluster --cache-cluster-id my-redis --engine redis # Real Redis via ElastiCache
   |  > ✓ Real Redis container running on localhost:16379
   ```
 
 
   ```
-  | Terraform
-  | 🌍 
+  | Terraform Example:
   | $ editor main.tf           # create blueprint file
   | + provider "aws" {
   | +   region = "us-east-1"
@@ -59,3 +59,4 @@
   | 
   | $ terraform apply          # It will create everything safely on local machine!
   ```
+[[}]]

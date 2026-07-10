@@ -1,0 +1,31 @@
+<hr/>
+## Apropos
+
+  Content is versioned in git. commits, issues and pull-requests welcome!<br/>
+  <https://www.github.com/earizon/AWS>
+
+  This __"cheat-sheet with steroids"__ presents an always-growing set of
+  AWS recipes and notes well ordered and classified. 
+
+## Q: Why do I need this if we already have Claude?
+
+A: simply put, some/many coding recipes here have become outdated
+with the "powerful" LLMs BUT ...
+- sometime LLMs guide us the wrong way because we wrote the wrong
+  PROMPT.
+- LLMs guides us through the most standard way to do things, which
+  many times is not the best way to work.
+- LLMs cost money :D. This site does not.
+- You can easily extend this page with private content that 
+  public LLMs are just not aware of. No need for complex fine-tunning
+  or vector databases, ... just markdown (plain text) and tags.
+
+- content returned from LLMs ussually differ from the content
+  returning by this page due to the "unknown unkowns". You can for
+  example query about "JAVA QA" topics to the LLM and the filter
+  content in this page related to QA. The LLMs offers very
+  targeted and meaningful information, ... but still sometimes it
+  ignores other important information. Ex:
+  -  You can spend years asking Claude to do stuff while ignoring
+     that you could have done that same much faster using Cloud Custodian,
+<hr/>

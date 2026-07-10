@@ -1,96 +1,98 @@
-#  KMS: (K)ey (M)anagement (S)ervice [[{security.secret_mng]]
+##  KMS: (K)ey (M)anagement (S)ervice [[{security.secret_mng]]
 * Management of cryptographic secrets for Apps and AWS resources.
 
-<https://aws.amazon.com/kms/>
-https://docs.aws.amazon.com/kms/latest/developerguide/overview.html
-https://docs.aws.amazon.com/kms/latest/developerguide/create-keys.html
-https://docs.aws.amazon.com/kms/latest/developerguide/viewing-keys.html
-https://docs.aws.amazon.com/kms/latest/developerguide/editing-keys.html
-https://docs.aws.amazon.com/kms/latest/developerguide/tagging-keys.html
-https://docs.aws.amazon.com/kms/latest/developerguide/enabling-keys.html
-https://docs.aws.amazon.com/kms/latest/developerguide/download-public-key.html
-https://docs.aws.amazon.com/kms/latest/developerguide/kms-alias.html
-https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
+- <https://aws.amazon.com/kms/>
+- <https://docs.aws.amazon.com/kms/latest/developerguide/overview.html>
+- <https://docs.aws.amazon.com/kms/latest/developerguide/create-keys.html>
+- <https://docs.aws.amazon.com/kms/latest/developerguide/viewing-keys.html>
+- <https://docs.aws.amazon.com/kms/latest/developerguide/editing-keys.html>
+- <https://docs.aws.amazon.com/kms/latest/developerguide/tagging-keys.html>
+- <https://docs.aws.amazon.com/kms/latest/developerguide/enabling-keys.html>
+- <https://docs.aws.amazon.com/kms/latest/developerguide/download-public-key.html>
+- <https://docs.aws.amazon.com/kms/latest/developerguide/kms-alias.html>
+- <https://docs.aws.amazon.com/cli/latest/reference/kms/index.html>
 
-* CORE KMS API Operations
-  * Encrypt/Decrypt
-  * GenerateDataKey
-  * GenerateDataKeyWithoutPlaintext
+### CORE KMS API Operations
 
-* create and control  customer master keys (CMKs) ,
+- Encrypt/Decrypt
+- GenerateDataKey
+- GenerateDataKeyWithoutPlaintext
+- create and control  customer master keys (CMKs) ,
   FIPS 140-2 Validated HSMs (except China/Beijing, China/Ningxia).
 
   ```
-* aws kms create-key \                ← DescribeKey | ListKeys | ScheduleKeyDeletion
-    --key-usage ...                     ← ENCRYPT_DECRYPT* | ENCRYPT_DECRYPT | SIGN_VERIFY .
-    --policy ...                        ← (optional) See official doc for policy requirements
-    --tags TagKey=key,TagValue=val01 \  ← pairs of key/value. (Valid for any resource not just kms)
-                                          AWS will generate usage/costs cost-allocation-reports
-                                          aggregated by tags. Ex:
-                                          --tags TagKey=project,TagValue=project01 \
-                                          --tags TagKey=component,TagValue=wallet
-    --description "Development test key"
-    --customer-master-key-spec        ← SYMMETRIC_DEFAULT | RSA_             | ECC_NIST_P     | ECC_NIST_P  | ECC_NIST_P521 | ECC_SECG_P256K1
-                                         (AES-256-GCM)    | (2048|3072|4096) | (secp(256|     |(secp384r1)  | (secp521r1)   | (secp256k1)
-                                                          |                  | 384|521)r1)    |             |               |
-                                         ENCRYPT_DECRYPT  | ENCRYPT_DECRYPT  |                |             |               |
-                                                          | SIGN_VERIFY      |  SIGN_VERIFY   | SIGN_VERIFY | SIGN_VERIFY   | SIGN_VERIFY
-
-    --origin ...                      ← source of key material for CMK
-                                        AWS_KMS: (Created by AWS KMS)
-                                        EXTERNAL:(Imported)
-                                        AWS_CLOUDHSM:     CMK  created in an AWS KMS custom key store
-                                                      and keys created in associated AWS CloudHSM cluster
-                                                      ( only for symmetric CMKs.)
-    --custom-key-store-id ...         ←  obligatory for --origin AWS_CLOUDHSM
-    --(no-)bypass-policy-lockout-safety-check ←   if true: risk of CMK becoming
-                                           unmanageable increases
-    --cli-input-json ...       ← aternative JSON to "--XXX" flags
-                                 (overrided by matching "--XXX" flags)
-    --generate-cli-skeleton ...← Dumps to STDOUT JSON skeleton without sending an API request.
-                                 TIP: ☞ If provided with no value , it prints a sample input
-                                        JSON that can be used as an argument for
-                                        --cli-input-json.
-    --description "..."        ← "Human description (purpose, contact, ...)"
+  | $ aws kms create-key \                ← DescribeKey | ListKeys | ScheduleKeyDeletion
+  |    --key-usage ...                     ← ENCRYPT_DECRYPT* | ENCRYPT_DECRYPT | SIGN_VERIFY .
+  |    --policy ...                        ← (optional) See official doc for policy requirements
+  |    --tags TagKey=key,TagValue=val01 \  ← pairs of key/value. (Valid for any resource not just kms)
+  |                                          AWS will generate usage/costs cost-allocation-reports
+  |                                          aggregated by tags. Ex:
+  |                                          --tags TagKey=project,TagValue=project01 \
+  |                                          --tags TagKey=component,TagValue=wallet
+  |    --description "Development test key"
+  |    --customer-master-key-spec        ← SYMMETRIC_DEFAULT | RSA_             | ECC_NIST_P     | ECC_NIST_P  | ECC_NIST_P521 | ECC_SECG_P256K1
+  |                                         (AES-256-GCM)    | (2048|3072|4096) | (secp(256|     |(secp384r1)  | (secp521r1)   | (secp256k1)
+  |                                                          |                  | 384|521)r1)    |             |               |
+  |                                         ENCRYPT_DECRYPT  | ENCRYPT_DECRYPT  |                |             |               |
+  |                                                          | SIGN_VERIFY      |  SIGN_VERIFY   | SIGN_VERIFY | SIGN_VERIFY   | SIGN_VERIFY
+  |
+  |    --origin ...                      ← source of key material for CMK
+  |                                        AWS_KMS: (Created by AWS KMS)
+  |                                        EXTERNAL:(Imported)
+  |                                        AWS_CLOUDHSM:     CMK  created in an AWS KMS custom key store
+  |                                                      and keys created in associated AWS CloudHSM cluster
+  |                                                      ( only for symmetric CMKs.)
+  |    --custom-key-store-id ...         ←  obligatory for --origin AWS_CLOUDHSM
+  |    --(no-)bypass-policy-lockout-safety-check ←   if true: risk of CMK becoming
+  |                                           unmanageable increases
+  |    --cli-input-json ...       ← aternative JSON to "--XXX" flags
+  |                                 (overrided by matching "--XXX" flags)
+  |    --generate-cli-skeleton ...← Dumps to STDOUT JSON skeleton without sending an API request.
+  |                                 TIP: ☞ If provided with no value , it prints a sample input
+  |                                        JSON that can be used as an argument for
+  |                                        --cli-input-json.
+  |    --description "..."        ← "Human description (purpose, contact, ...)"
   ``` 
 
   (Output will be similar to)
   ``` 
-  {
-    "KeyMetadata": {
-      "AWSAccountId": "123456789012",
-      "KeyId": "1234abcd-12ab-34cd-56ef-1234567890ab",  ← globally unique ID for CMK
-      "Arn": "arn:aws:kms::us-west-2:123456789012:key/   ← Amazon Resource Name (ARN) of the CMK.
-              1234abcd-12ab-34cd-56ef-1234567890ab",
-      "CreationDate": 1566160362.664,
-      "Enabled": true,
-      "Description": "Development test key",
-      "KeyUsage": "ENCRYPT_DECRYPT",
-      "KeyState": "Enabled",
-      "Origin": "AWS_KMS",                  ← Source of CMK's key material.
-                                              AWS_KMS  : created by AWS_KMS.
-                                              EXTERNAL: imported from existing key management infrastructure
-                                                        or key material still missing.
-                                              AWS_CLOUDHSM: created in AWS CloudHSM cluster associated with
-                                                         a custom key store.
-      "KeyManager": "CUSTOMER"              ← AWS | CUSTOMER
-      ...                                    ← DeletionDate, only visible when key is pending-deletion
-                                               ValidTo (Expiration time)
-                                               CustomKeyStoreId:  (if it applies)
-    }                                          CloudHsmClusterId: (if it applies)
-  }                                            ExpirationModel (only when Origin is EXTERNAL)
-                                               CustomerMasterKeySpec → for CMF
-                                               EncryptionAlgorithms  → for CMK (list)
-                                               SigningAlgorithms     → for CMK (list)
+  | {
+  |   "KeyMetadata": {
+  |     "AWSAccountId": "123456789012",
+  |     "KeyId": "1234abcd-12ab-34cd-56ef-1234567890ab",  ← globally unique ID for CMK
+  |     "Arn": "arn:aws:kms::us-west-2:123456789012:key/   ← Amazon Resource Name (ARN) of the CMK.
+  |             1234abcd-12ab-34cd-56ef-1234567890ab",
+  |     "CreationDate": 1566160362.664,
+  |     "Enabled": true,
+  |     "Description": "Development test key",
+  |     "KeyUsage": "ENCRYPT_DECRYPT",
+  |     "KeyState": "Enabled",
+  |     "Origin": "AWS_KMS",                  ← Source of CMK's key material.
+  |                                             AWS_KMS  : created by AWS_KMS.
+  |                                             EXTERNAL: imported from existing key management infrastructure
+  |                                                       or key material still missing.
+  |                                             AWS_CLOUDHSM: created in AWS CloudHSM cluster associated with
+  |                                                        a custom key store.
+  |     "KeyManager": "CUSTOMER"              ← AWS | CUSTOMER
+  |     ...                                    ← DeletionDate, only visible when key is pending-deletion
+  |                                              ValidTo (Expiration time)
+  |                                              CustomKeyStoreId:  (if it applies)
+  |   }                                          CloudHsmClusterId: (if it applies)
+  | }                                            ExpirationModel (only when Origin is EXTERNAL)
+  |                                              CustomerMasterKeySpec → for CMF
+  |                                              EncryptionAlgorithms  → for CMK (list)
+  |                                              SigningAlgorithms     → for CMK (list)
   ``` 
 
-- Symmetric CMKs: 256-bit sym key never leaves AWS KMS unencrypted .
-  - used t  encrypt/decrypt small amounts of data
-    (generate data keys, data keys pairs)
-    - See  GenerateDataKey and GenerateDataKeyPair .
-  - Creation:
-    1.  "CustomerMasterKeySpec" param is always SYMMETRIC_DEFAULT
-    2. use "KeyUsage"           param is always ENCRYPT_DECRYPT
+### Symmetric CMKs:
+
+- 256-bit sym key never leaves AWS KMS unencrypted .
+- used t  encrypt/decrypt small amounts of data
+  (generate data keys, data keys pairs)
+  - See  GenerateDataKey and GenerateDataKeyPair .
+- Creation:
+  1.  "CustomerMasterKeySpec" param is always SYMMETRIC_DEFAULT
+  2. use "KeyUsage"           param is always ENCRYPT_DECRYPT
 
 - Asymmetric CMKs key pairs can be:
   - RSA: used to encrypt/decrypt data and sign/verify messages (but not both).
@@ -107,31 +109,34 @@ https://docs.aws.amazon.com/cli/latest/reference/kms/index.html
   - AWS CloudHSM cluster associated must have 2+ active HSMs in different AZ.
   - asymmetric CMK  can NOT  be created
 
-   ☞TIP:  CMK applies the default-key-policy :
+  - - ☞TIP:  CMK applies the default-key-policy :
         <https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default>
           - Use 'get-key-policy' to see    it.
           - Use 'put-key-policy' to change it.
 
-  - After creating the key, an alias can be createed pointing to the new CMK with
-    'create-alias'.
+- After creating the key, an alias can be createed pointing to the new CMK with
+  'create-alias'.
 
-  FULL LIST OF COMMANDS
-- CRYPTO. OPERATIONS: (once keys are in place)
-                      encrypt | re-encrypt | decrypt | sign | verify
-- KEY Management:     (create|describe|disable|enable)-key | list-keys
-                      (schedule|cancel)-key-deletion
-                      (enable|disable)-key-rotation | get-key-rotation-status
-                      generate-data-(key|key-pair)
-                      generate-data-(key|key-pair)-without-plaintext
-                       get-public-key
-  - update-key-description
-- RANDOM            : generate-random
-- TAGS              :  (tag|untag)-resource | list-resource-tags
-- GRANTS            : (create|retire|revoke)-grant | (list|list-retirable)-grants
-- POLICIES          : (get|put)-key-policy | list-key-policies
-- ALIASES           : (create|update|delete|list)-alias
-- IMPORT EXTERN.KEYS:  get-parameters-for-import | (import|delete-imported)-key-material
-- CUSTOM KEY STORE  : (create|update|delete|connect|disconnect|describe)-custom-key-store
+
+  ```
+  | FULL LIST OF COMMANDS
+  | - CRYPTO. OPERATIONS: (once keys are in place)
+  |                       encrypt | re-encrypt | decrypt | sign | verify
+  | - KEY Management:     (create|describe|disable|enable)-key | list-keys
+  |                       (schedule|cancel)-key-deletion
+  |                       (enable|disable)-key-rotation | get-key-rotation-status
+  |                       generate-data-(key|key-pair)
+  |                       generate-data-(key|key-pair)-without-plaintext
+  |                        get-public-key
+  |   - update-key-description
+  | - RANDOM            : generate-random
+  | - TAGS              :  (tag|untag)-resource | list-resource-tags
+  | - GRANTS            : (create|retire|revoke)-grant | (list|list-retirable)-grants
+  | - POLICIES          : (get|put)-key-policy | list-key-policies
+  | - ALIASES           : (create|update|delete|list)-alias
+  | - IMPORT EXTERN.KEYS:  get-parameters-for-import | (import|delete-imported)-key-material
+  | - CUSTOM KEY STORE  : (create|update|delete|connect|disconnect|describe)-custom-key-store
+  ```
 [[}]]
 
 

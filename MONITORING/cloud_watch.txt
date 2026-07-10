@@ -1,25 +1,29 @@
-# CloudWatch 
+## CloudWatch 
 
-## CloudWatch monitoring&Observability [[{101,troubleshooting,monitoring,PM.TODO]]
-  <https://aws.amazon.com/cloudwatch/>
-  - built for: DevOps engineers, developers, site reliability engineers (SREs), IT managers.
-  - Cloud and on-premises
-  - CloudWatch provides data and actionable insights to:
-    - monitor applications/resources/services.
-    - respond to system-wide performance changes.
-    - optimize resource utilization.
-    - get a unified view of operational health.
-  - INPUT : Data collected as logs, metrics, and events.
-    OUTPUT: unified view of operational health.
-    PROCESSING: Detect anomalous behavior, set alarms.
-                Example alarms include:
-                - "Null" appearance in logs. ("Billion Dollar Mistake")
-                - HTTP 404 exceeds N-per-minute.
-  - See also:
-    - <#guard_duty>
-    - CWL: <https://github.com/PoeBlu/cwl>
-      CloudWatch Logs CLI, helping to monitor CloudWatch logs on the command line.
-      "... AWS CLI displays logs in JSON format, and while that can be processed
-       with another tool like jq, it's a bit of a pain. cwl simplify parameters,
-       choosing sane defaults..."
-[[}]]
+[[{101,troubleshooting,monitoring.cloudwatch,monitoring.101,PM.TODO]]
+## CloudWatch monitoring&Observability 
+
+
+- <https://aws.amazon.com/cloudwatch/>
+
+- built for: DevOps engineers, developers, site reliability engineers (SREs), IT managers.
+- Cloud and on-premises
+- CloudWatch provides data and actionable insights to:
+  - monitor applications/resources/services.
+  - respond to system-wide performance changes.
+  - optimize resource utilization.
+  - get a unified view of operational health.
+- INPUT : Data collected as logs, metrics, and events.
+  OUTPUT: unified view of operational health.
+  PROCESSING: Detect anomalous behavior, set alarms.
+              Example alarms include:
+              - "Null" appearance in logs. ("Billion Dollar Mistake")
+              - HTTP 404 exceeds N-per-minute.
+- See also:
+  - guard_duty
+  - CWL: <https://github.com/PoeBlu/cwl>
+    CloudWatch Logs CLI, helping to monitor CloudWatch logs on the command line.
+    "... AWS CLI displays logs in JSON format, and while that can be processed
+     with another tool like jq, it's a bit of a pain. cwl simplify parameters,
+     choosing sane defaults..."
+[[101}]]
